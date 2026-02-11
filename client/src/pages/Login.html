@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Login</h2>
+
+  <input id="username" placeholder="Username" />
+  <small id="uMsg" style="color:red"></small>
+
+  <div class="password-box">
+    <input id="password" type="password" placeholder="Password" />
+    <span onclick="togglePassword()">👁</span>
+  </div>
+
+  <button onclick="login()">Login</button>
+
+  <div class="switch">
+    New user? <a href="Signup.html">Create account</a>
+  </div>
+</div>
+
+<script>
+  const usernameInput = document.getElementById("username");
+  const uMsg = document.getElementById("uMsg");
+
+  //////////////////////////////////////////////////
+  // DEBOUNCE USERNAME CHECK (1.5 sec)
+  //////////////////////////////////////////////////
+  let timer;
+
+  usernameInput.addEventListener("input", () => {
+    const value = usernameInput.value.trim();
+    uMsg.innerText = "";
+
+    clearTimeout(timer);
+
+    if (!value) return;
+
+    timer = setTimeout(() => {
+      fetch(`http://localhost:5000/api/auth/search/${value}`)
+        .then(res => res.json())
+        .then(users => {
+          const found = users.find(u => u.username === value);
+          if (!found) {
+            uMsg.innerText = "Username doesn't exist";
+          }
+        });
+    }, 1000);
+  });
+
+  //////////////////////////////////////////////////
+  // SHOW / HIDE PASSWORD
+  //////////////////////////////////////////////////
+  function togglePassword() {
+    const input = document.getElementById("password");
+    input.type = input.type === "password" ? "text" : "password";
+  }
+
+  //////////////////////////////////////////////////
+  // LOGIN
+  //////////////////////////////////////////////////
+  function login() {
+    const username = usernameInput.value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!username || !password) {
+      alert("Enter all fields");
+      return;
+    }
+
+    if (uMsg.innerText) {
+      alert("Invalid username");
+      return;
+    }
+
+    fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          window.location = "Chat.html";
+        } else {
+          alert(data.message || "Wrong password");
+        }
+      })
+      .catch(() => alert("Server error"));
+  }
+</script>
+
+</body>
+</html>

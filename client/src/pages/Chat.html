@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat</title>
+  <link rel="stylesheet" href="chat.css">
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="contacts">
+
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <img id="myPhoto" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid #ccc;">
+      <div id="myName"></div>
+    </div>
+
+    <button onclick="goProfile()" class="find-btn">Profile</button>
+    <button onclick="logout()" class="find-btn">Logout</button>
+
+    <hr>
+
+    <h3>Search</h3>
+    <input id="searchInput" placeholder="username" />
+    <button class="find-btn" onclick="searchUser()">Find</button>
+
+    <div id="searchResult"></div>
+
+    <hr>
+
+    <h3>Contacts</h3>
+    <div id="contacts"></div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="chat-area">
+    <div class="header" id="chatWith">
+      Select a contact
+    </div>
+
+    <div id="chat"></div>
+
+    <div class="send-area">
+      <input id="msg" placeholder="Type a message" />
+      <button onclick="send()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="chat.js"></script>
+
+</body>
+</html>

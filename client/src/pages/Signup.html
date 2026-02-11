@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signup</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Create Account</h2>
+
+  <input id="username" placeholder="Username" />
+  <small id="uMsg" style="color:red"></small>
+
+  <div class="password-box">
+    <input id="password" type="password" placeholder="Password (min 4)" />
+    <span onclick="toggle('password')">👁</span>
+  </div>
+  <small id="pMsg" style="color:red"></small>
+
+  <div class="password-box">
+    <input id="confirm" type="password" placeholder="Confirm password" />
+    <span onclick="toggle('confirm')">👁</span>
+  </div>
+  <small id="cMsg" style="color:red"></small>
+
+  <button onclick="signup()">Signup</button>
+
+  <div class="switch">
+    Already have account? <a href="Login.html">Login</a>
+  </div>
+</div>
+
+<script>
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+  const confirmInput = document.getElementById("confirm");
+
+  const uMsg = document.getElementById("uMsg");
+  const pMsg = document.getElementById("pMsg");
+  const cMsg = document.getElementById("cMsg");
+
+  //////////////////////////////////////////////////
+  // LIVE USERNAME CHECK
+  //////////////////////////////////////////////////
+  usernameInput.addEventListener("input", () => {
+    const value = usernameInput.value.trim();
+    uMsg.innerText = "";
+
+    if (value.length < 3) {
+      uMsg.innerText = "Minimum 3 characters";
+      return;
+    }
+
+    fetch(`http://localhost:5000/api/auth/search/${value}`)
+      .then(res => res.json())
+      .then(users => {
+        const found = users.find(u => u.username === value);
+        if (found) uMsg.innerText = "Username already taken";
+      });
+  });
+
+  //////////////////////////////////////////////////
+  // PASSWORD VALIDATION
+  //////////////////////////////////////////////////
+  passwordInput.addEventListener("input", () => {
+    pMsg.innerText = "";
+    if (passwordInput.value.length < 4) {
+      pMsg.innerText = "Password too short";
+    }
+  });
+
+  //////////////////////////////////////////////////
+  // CONFIRM VALIDATION
+  //////////////////////////////////////////////////
+  confirmInput.addEventListener("input", () => {
+    cMsg.innerText = "";
+    if (confirmInput.value !== passwordInput.value) {
+      cMsg.innerText = "Passwords not match";
+    }
+  });
+
+  //////////////////////////////////////////////////
+  // EYE TOGGLE
+  //////////////////////////////////////////////////
+  function toggle(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+  }
+
+  //////////////////////////////////////////////////
+  // SIGNUP
+  //////////////////////////////////////////////////
+  function signup() {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    const confirm = confirmInput.value.trim();
+
+    if (!username || !password || !confirm) {
+      alert("Fill all fields");
+      return;
+    }
+
+    if (password.length < 4) {
+      alert("Password too short");
+      return;
+    }
+
+    if (password !== confirm) {
+      alert("Passwords not match");
+      return;
+    }
+
+    fetch("http://localhost:5000/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          // ✅ AUTO LOGIN
+          localStorage.setItem("user", JSON.stringify(data.user));
+          window.location = "Chat.html";
+        } else {
+          alert(data.message || "Error");
+        }
+      })
+      .catch(() => alert("Server error"));
+  }
+</script>
+
+</body>
+</html>

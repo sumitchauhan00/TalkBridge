@@ -2,10 +2,10 @@ flask==3.0.3
 gunicorn==22.0.0
 
 # Critical: avoid NumPy 2.x binary-compat issues with TF/mediapipe
-numpy<2
+numpy==1.26.4
 
 # Computer vision / landmarks
-mediapipe==0.10.14
+
 opencv-python==4.10.0.84
 
 # If your code imports tensorflow (mediapipe tasks may pull it in on some setups)

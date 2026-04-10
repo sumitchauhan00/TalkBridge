@@ -1,77 +1,56 @@
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const path = require("path");
+
+const mlRoutes = require("./routes/mlroutes");
+
+// ROUTES
 const authRoutes = require("./routes/authRoutes");
 const contactRoutes = require("./routes/contactRoutes");
-const Message = require("./models/Message");
 const messageRoutes = require("./routes/messageRoutes");
+const requestRoutes = require("./routes/requestroute");
 
 const app = express();
 
-connectDB();   // 👈 ye missing hota hai usually
+// DATABASE
+connectDB();
 
+// MIDDLEWARE
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true }));
 
-const http = require("http");
-const { Server } = require("socket.io");
+// STATIC
+app.use("/signs", express.static(path.join(__dirname, "public", "signs")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // IMPORTANT
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
-
-
+// API ROUTES
+app.use("/api/ml", mlRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/messages", messageRoutes);
-
-
+app.use("/api/requests", requestRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server running");
 });
 
-let onlineUsers = {};
+// HTTP + SOCKET
+const http = require("http");
+const { Server } = require("socket.io");
 
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+const server = http.createServer(app);
 
-  socket.on("join", (userId) => {
-    onlineUsers[userId] = socket.id;
-  });
-
-  socket.on("send_message", async ({ senderId, receiverId, message }) => {
-    const receiverSocket = onlineUsers[receiverId];
-
-    await Message.create({
-    sender: senderId,
-    receiver: receiverId,
-    message,
-  });
-
-    if (receiverSocket) {
-      io.to(receiverSocket).emit("receive_message", {
-        senderId,
-        message,
-      });
-    }
-  });
-
-  socket.on("disconnect", () => {
-    for (let userId in onlineUsers) {
-      if (onlineUsers[userId] === socket.id) {
-        delete onlineUsers[userId];
-      }
-    }
-  });
+const io = new Server(server, {
+  cors: { origin: "*" },
 });
 
+// LOAD SOCKET HANDLERS
+const chatSocket = require("./sockets/chatSocket");
+chatSocket(io);
 
 const PORT = 5000;
 server.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  console.log("Server started on port", PORT);
 });
-

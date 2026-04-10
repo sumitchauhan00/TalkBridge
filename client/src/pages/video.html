@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TalkBridge</title>
+
+  <link rel="stylesheet" href="video.css" />
+  <link rel="stylesheet" href="global.css" />
+  <link rel="stylesheet" href="toggle.css" />
+
+  <script>
+    if (localStorage.getItem("app-theme") === "dark") {
+      document.addEventListener("DOMContentLoaded", function () {
+        document.body.classList.add("dark-mode");
+      });
+
+      const style = document.createElement("style");
+      style.innerHTML = `
+        body {
+          background-color: #0f172a !important;
+          color: #f8fafc !important;
+          transition: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  </script>
+</head>
+<body>
+  <h2 class="title">Video Call</h2>
+
+  <div class="main">
+    <!-- MY VIDEO -->
+    <div class="video-box">
+      <video id="myVideo" autoplay muted playsinline></video>
+      <p id="myLabel" class="video-label">You</p>
+    </div>
+
+    <!-- AI PANEL -->
+    <div class="ai-box">
+      <div class="ai-head">
+        <h3 class="title">ML Translation</h3>
+        <div id="voiceIndicator">Voice Idle</div>
+      </div>
+
+      <p id="aiText">Waiting for data...</p>
+      <div id="aiHint">Signs and sentences will appear here.</div>
+
+      <div class="vc-controls">
+        <button id="micBtn" type="button">🎤 Start Listening</button>
+        <span id="micStatus">Mic Idle</span>
+      </div>
+
+      <p id="speechText" class="speech-text">Speech text will appear here...</p>
+
+      <div id="signPanel" class="sign-panel"></div>
+    </div>
+
+    <!-- FRIEND VIDEO -->
+    <div class="video-box">
+      <video id="userVideo" autoplay playsinline></video>
+      <p id="friendLabel" class="video-label">Connecting...</p>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button onclick="toggleMute()" class="mute">Mute</button>
+    <button onclick="toggleVideo()" class="videoOff">Video Off</button>
+    <button onclick="hangUp()" class="end">End</button>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="video.js"></script>
+  <script src="toggle.js"></script>
+</body>
+</html>

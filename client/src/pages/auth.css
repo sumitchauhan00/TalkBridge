@@ -1,73 +1,128 @@
+/* Layout specifically for Auth pages */
 body {
-  margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(120deg, #e3f2fd, #ffffff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Optional Gradient specific to Auth */
+    background: linear-gradient(135deg, var(--bg-body) 0%, var(--bg-card) 100%);
 }
 
 .card {
-  background: white;
-  padding: 30px;
-  width: 300px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    background: var(--bg-card);
+    padding: 30px;
+    width: 320px; /* Thoda wide kiya standard ke liye */
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .card h2 {
-  text-align: center;
-  margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-main);
 }
 
 .card input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  outline: none;
-  font-size: 14px;
-}
-
-.card input:focus {
-  border-color: #0084ff;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-size: 14px;
 }
 
 .card button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #0084ff;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 5px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 5px;
 }
 
 .card button:hover {
-  background: #006fd6;
+    background: var(--primary-hover);
 }
 
 .switch {
-  text-align: center;
-  margin-top: 15px;
-  font-size: 14px;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    color: var(--text-muted);
 }
 
-/* eye icon */
+.switch a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Password Eye Icon */
 .password-box {
-  position: relative;
+    position: relative;
+}
+.password-box span {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text-muted);
 }
 
-.password-box span {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 14px;
-  color: #555;
+/* Branding Style */
+.brand-name {
+    text-align: center;
+    font-size: 32px;       /* Bada size */
+    font-weight: 800;      /* Extra Bold */
+    margin-top: 0;
+    margin-bottom: 10px;   /* Thoda gap */
+    color: var(--text-main); /* Theme ke hisab se black/white */
+    letter-spacing: -1px;  /* Letters thode chipke hue (Modern look) */
 }
+
+/* "bridge" word ko highlight karne ke liye */
+.brand-name span.right {
+    color: var(--primary); /* Blue color */
+}
+
+/* Jo purana h2 (Login/Signup text) hai, use thoda chhota kar dete hain */
+.brand-name {
+    font-size: 100px;
+    color: var(--text-muted); /* Grey color taaki Brand focus me rahe */
+    margin-bottom: 25px;
+    /* font-weight: ; */
+}
+
+/* Animation Keyframes */
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Applying Animation */
+.brand-name {
+    display: flex;
+    justify-content: center;
+    gap: 2px; /* Thoda gap taaki chipke na */
+}
+
+.brand-name .left {
+    animation: slideInLeft 1s ease-out forwards;
+    display: inline-block;
+}
+
+.brand-name .right {
+    color: var(--primary);
+    animation: slideInRight 1s ease-out forwards;
+    display: inline-block;
+}
+
+

@@ -1,8 +1,36 @@
 const express = require("express");
 const router = express.Router();
-const { addContact, getContacts } = require("../controllers/contactController");
 
+const {
+  addContact,
+  getContacts,
+  deleteContact,
+  searchContactsUsers
+} = require("../controllers/contactController");
+
+//////////////////////////////////////////////////
+// STATIC / SPECIFIC ROUTES FIRST
+//////////////////////////////////////////////////
+router.get("/test", (req, res) => {
+  res.send("contacts route working");
+});
+
+// search users for chat search bar
+router.get("/search/:userId", searchContactsUsers);
+
+//////////////////////////////////////////////////
+// ADD CONTACT
+//////////////////////////////////////////////////
 router.post("/add", addContact);
+
+//////////////////////////////////////////////////
+// UNFRIEND / REMOVE CONTACT
+//////////////////////////////////////////////////
+router.post("/remove", deleteContact);
+
+//////////////////////////////////////////////////
+// DYNAMIC ROUTE LAST
+//////////////////////////////////////////////////
 router.get("/:userId", getContacts);
 
 module.exports = router;

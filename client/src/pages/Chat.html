@@ -1,58 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Chat</title>
-  <link rel="stylesheet" href="chat.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TalkBridge</title>
+
+  <script>
+    if (localStorage.getItem("app-theme") === "dark") {
+      document.addEventListener("DOMContentLoaded", function () {
+        document.body.classList.add("dark-mode");
+      });
+
+      const style = document.createElement("style");
+      style.id = "flash-fix";
+      style.innerHTML = `
+        body {
+          background-color: #0f172a !important;
+          color: #f8fafc !important;
+          transition: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  </script>
+
+  <link rel="stylesheet" href="chat.css" />
+  <link rel="stylesheet" href="global.css" />
+  <link rel="stylesheet" href="toggle.css" />
 </head>
 
 <body>
+  <div class="layout">
+    <!-- LEFT -->
+    <div class="contacts">
+      <!-- USER INFO -->
+      <div class="me-box" onclick="goProfile()">
+        <img id="myPhoto" />
+        <div id="myName"></div>
+      </div>
 
-<div class="layout">
+      <hr />
 
-  <!-- LEFT -->
-  <div class="contacts">
+      <!-- FRIEND REQUEST SECTION -->
+      <h3>Friend Requests</h3>
+      <div id="notifications"></div>
 
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-      <img id="myPhoto" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid #ccc;">
-      <div id="myName"></div>
+      <hr />
+
+      <!-- SEARCH -->
+      <h3>Search</h3>
+      <input id="searchInput" placeholder="username" autocomplete="off" />
+      <div id="searchResult"></div>
+
+      <hr />
+
+      <!-- CONTACTS -->
+      <h3>Contacts</h3>
+      <div id="contacts"></div>
     </div>
 
-    <button onclick="goProfile()" class="find-btn">Profile</button>
-    <button onclick="logout()" class="find-btn">Logout</button>
+    <!-- RIGHT -->
+    <div class="chat-area">
+      <div class="header">
+        <span id="chatWith"></span>
+        <span id="typing" class="typing"></span>
 
-    <hr>
+        <!-- Video Call Button (left of theme toggle) -->
+       <button
+  id="videoCallBtn"
+  class="video-call-btn hidden"
+  onclick="startCall()"
+  title="Start Video Call"
+  aria-label="Start Video Call"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M15 10.5V6a2 2 0 0 0-2-2H5A2 2 0 0 0 3 6v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4.5l6 4V6.5l-6 4z"/>
+  </svg>
+</button>
 
-    <h3>Search</h3>
-    <input id="searchInput" placeholder="username" />
-    <button class="find-btn" onclick="searchUser()">Find</button>
+        <button id="theme-toggle" class="theme-btn" title="Switch Theme">🌙</button>
+      </div>
 
-    <div id="searchResult"></div>
+      <div id="chat"></div>
 
-    <hr>
+      <!-- WELCOME -->
+      <div id="welcome" class="welcome">
+        Welcome to <b>TalkBridge</b> 👋
+      </div>
 
-    <h3>Contacts</h3>
-    <div id="contacts"></div>
-
+      <!-- SEND -->
+      <div class="send-area" id="sendArea">
+        <input id="msg" placeholder="Type a message" autocomplete="off" />
+        <button onclick="send()">Send</button>
+      </div>
+    </div>
   </div>
 
-  <!-- RIGHT -->
-  <div class="chat-area">
-    <div class="header" id="chatWith">
-      Select a contact
-    </div>
-
-    <div id="chat"></div>
-
-    <div class="send-area">
-      <input id="msg" placeholder="Type a message" />
-      <button onclick="send()">Send</button>
+  <!-- ALERT -->
+  <div id="alertModal" class="modal">
+    <div class="modal-box">
+      <p id="alertMessage"></p>
+      <button onclick="closeAlert()">OK</button>
     </div>
   </div>
 
-</div>
+  <!-- CALL -->
+  <div id="callModal" class="modal">
+    <div class="modal-box">
+      <p>📞 Incoming call</p>
+      <div class="call-actions">
+        <button onclick="acceptCall()">Accept</button>
+        <button class="decline" onclick="declineCall()">Decline</button>
+      </div>
+    </div>
+  </div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="chat.js"></script>
+  <!-- message sound -->
+  <audio
+    id="msgSound"
+    src="https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3"
+  ></audio>
 
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="chat.js"></script>
+  <script src="toggle.js"></script>
 </body>
 </html>

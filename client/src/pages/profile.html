@@ -1,27 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Profile</title>
-  <link rel="stylesheet" href="profile.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkBridge</title>
+    
+<script>
+if (localStorage.getItem('app-theme') === 'dark') {
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.add('dark-mode');
+    });
+
+    const style = document.createElement('style');
+    style.id = 'flash-fix';
+    style.innerHTML = `
+        body { 
+            background-color: #0f172a !important; 
+            color: #f8fafc !important;
+            transition: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+</script>
+     <link rel="stylesheet" href="profile.css">
+     <link rel="stylesheet" href="global.css">
+     <link rel="stylesheet" href="toggle.css">
+    </head>
 
 <body>
+
 
 <div class="profile-card">
   <h2>My Profile</h2>
 
   <img id="avatar" src="" />
 
-  <input type="file" id="photoInput" accept="image/*" />
+  <!-- NEW FILE UI -->
+  <div class="file-upload">
+    <label for="photoInput" class="upload-btn">📷 Choose Photo</label>
+
+    <!-- ✅ THIS LINE REQUIRED -->
+    <!-- <span id="fileName"></span> -->
+
+    <input type="file" id="photoInput" accept="image/*" hidden />
+  </div>
+
   <button onclick="savePhoto()">Save Photo</button>
 
   <p><b>Username:</b> <span id="username"></span></p>
-  <p><b>User ID:</b> <span id="userid"></span></p>
+  <p hidden><b>User ID:</b> <span id="userid"></span></p>
 
   <button onclick="goChat()">Back to Chat</button>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
 </div>
 
 <script src="profile.js"></script>
+<script src="toggle.js"></script>
 
 </body>
 </html>

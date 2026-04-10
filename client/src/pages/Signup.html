@@ -1,11 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Signup</title>
-  <link rel="stylesheet" href="auth.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkBridge</title>
+    
+   <script>
+if (localStorage.getItem('app-theme') === 'dark') {
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.add('dark-mode');
+    });
+
+    const style = document.createElement('style');
+    style.id = 'flash-fix';
+    style.innerHTML = `
+        body { 
+            background-color: #0f172a !important; 
+            color: #f8fafc !important;
+            transition: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+</script>
+     <link rel="stylesheet" href="auth.css">
+     <link rel="stylesheet" href="global.css">
+     <link rel="stylesheet" href="toggle.css">
+    </head>
 
 <body>
+ 
+
+<div class="brand">
+    <h1 class="brand-name"><span class="left">Talk</span><span class="right">Bridge👋</span></h1>
+</div>
 
 <div class="card">
   <h2>Create Account</h2>
@@ -130,6 +159,6 @@
       .catch(() => alert("Server error"));
   }
 </script>
-
+<script src="toggle.js"></script>
 </body>
 </html>

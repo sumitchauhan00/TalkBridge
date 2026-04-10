@@ -1,11 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="auth.css">
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkBridge</title>
+    
+  <script>
+if (localStorage.getItem('app-theme') === 'dark') {
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.add('dark-mode');
+    });
+
+    const style = document.createElement('style');
+    style.id = 'flash-fix';
+    style.innerHTML = `
+        body { 
+            background-color: #0f172a !important; 
+            color: #f8fafc !important;
+            transition: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+</script>
+   <link rel="stylesheet" href="auth.css">
+  <link rel="stylesheet" href="global.css">
+   <link rel="stylesheet" href="toggle.css">
+    </head>
 
 <body>
+<div class="brand">
+    <h1 class="brand-name"><span class="left">Talk</span><span class="right"> <b>Bridge👋</b></span></h1>
+</div>
 
 <div class="card">
   <h2>Login</h2>
@@ -25,77 +52,67 @@
   </div>
 </div>
 
+<!-- after your HTML inputs/buttons -->
 <script>
-  const usernameInput = document.getElementById("username");
-  const uMsg = document.getElementById("uMsg");
+const usernameInput = document.getElementById("username");
+const uMsg = document.getElementById("uMsg");
+let timer;
 
-  //////////////////////////////////////////////////
-  // DEBOUNCE USERNAME CHECK (1.5 sec)
-  //////////////////////////////////////////////////
-  let timer;
+usernameInput.addEventListener("input", () => {
+  const value = usernameInput.value.trim();
+  uMsg.innerText = "";
+  clearTimeout(timer);
+  if (!value) return;
+  timer = setTimeout(() => {
+    fetch(`http://localhost:5000/api/auth/search/${value}`)
+      .then(res => res.json())
+      .then(users => {
+        const found = users.find(u => u.username === value);
+        if (!found) uMsg.innerText = "Username doesn't exist";
+      })
+      .catch(() => {});
+  }, 1000);
+});
 
-  usernameInput.addEventListener("input", () => {
-    const value = usernameInput.value.trim();
-    uMsg.innerText = "";
+function togglePassword() {
+  const input = document.getElementById("password");
+  input.type = input.type === "password" ? "text" : "password";
+}
 
-    clearTimeout(timer);
+async function login() {
+  const username = usernameInput.value.trim();
+  const password = document.getElementById("password").value.trim();
 
-    if (!value) return;
-
-    timer = setTimeout(() => {
-      fetch(`http://localhost:5000/api/auth/search/${value}`)
-        .then(res => res.json())
-        .then(users => {
-          const found = users.find(u => u.username === value);
-          if (!found) {
-            uMsg.innerText = "Username doesn't exist";
-          }
-        });
-    }, 1000);
-  });
-
-  //////////////////////////////////////////////////
-  // SHOW / HIDE PASSWORD
-  //////////////////////////////////////////////////
-  function togglePassword() {
-    const input = document.getElementById("password");
-    input.type = input.type === "password" ? "text" : "password";
+  if (!username || !password) {
+    alert("Enter all fields");
+    return;
   }
-
-  //////////////////////////////////////////////////
-  // LOGIN
-  //////////////////////////////////////////////////
-  function login() {
-    const username = usernameInput.value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    if (!username || !password) {
-      alert("Enter all fields");
-      return;
-    }
-
-    if (uMsg.innerText) {
-      alert("Invalid username");
-      return;
-    }
-
-    fetch("http://localhost:5000/api/auth/login", {
+  if (uMsg.innerText) {
+    alert("Invalid username");
+    return;
+  }
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-          window.location = "Chat.html";
-        } else {
-          alert(data.message || "Wrong password");
-        }
-      })
-      .catch(() => alert("Server error"));
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.user || !data.user._id) {
+      alert(data.message || "Login failed");
+      return;
+    }
+
+    // Store current user and go to chat page
+    localStorage.setItem("user", JSON.stringify(data.user));
+    window.location = "Chat.html";
+  } catch (e) {
+    alert("Server error");
   }
+}
 </script>
+<script src="toggle.js"></script>
 
 </body>
 </html>

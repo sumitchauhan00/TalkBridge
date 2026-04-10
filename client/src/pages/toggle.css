@@ -1,0 +1,29 @@
+/* Theme Toggle Button Style */
+.theme-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border-color); /* Theme border */
+    color: var(--text-main);              /* Icon color */
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;                   /* Gol button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    
+}
+
+.theme-btn:hover {
+    background: var(--bg-hover);          /* Hover effect */
+    transform: scale(1.1);                /* Thoda sa bada hoga */
+}
+
+/* Dark Mode me Button Active dikhane ke liye (Optional) */
+body.dark-mode .theme-btn {
+    background: var(--bg-hover);
+    color: #fbbf24;                       /* Moon/Sun yellow color */
+    border-color: #fbbf24;
+}

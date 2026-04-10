@@ -22,3 +22,8 @@ env/
 server/uploads/
 *.log
 .DS_Store
+
+# ML models (too large)
+*.pkl
+ml_service/*.pkl
+ml_service/models/

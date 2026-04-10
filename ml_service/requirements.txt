@@ -16,3 +16,5 @@ scikit-learn==1.5.0
 
 # Common utilities (often needed by sklearn/pandas pipelines; safe to keep)
 joblib==1.4.2
+
+pandas==2.2.2

@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import os
+import requests
 import numpy as np
 import cv2
 import pickle
@@ -14,9 +16,30 @@ CORS(app)
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "landmark_model.pkl"
+MODEL_URL = os.getenv("MODEL_URL", "").strip()
 
-if not MODEL_PATH.exists():
-    raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
+
+def ensure_model():
+    if MODEL_PATH.exists():
+        return
+
+    if not MODEL_URL:
+        raise FileNotFoundError(
+            f"Model not found: {MODEL_PATH}. Please set MODEL_URL environment variable."
+        )
+
+    try:
+        resp = requests.get(MODEL_URL, timeout=300)
+        resp.raise_for_status()
+        with open(MODEL_PATH, "wb") as f:
+            f.write(resp.content)
+        print(f"[INFO] Model downloaded to: {MODEL_PATH}")
+    except Exception as e:
+        raise RuntimeError(f"Failed to download model from MODEL_URL: {e}")
+
+
+# Ensure model exists before loading
+ensure_model()
 
 with open(MODEL_PATH, "rb") as f:
     artefact = pickle.load(f)
@@ -39,8 +62,9 @@ sb = SentenceBuilder(
     timeout=2.2,
     max_words=8,
     min_confidence=max(0.60, CONFIDENCE_THRESHOLD),  # keep aligned with model threshold
-    min_repeat_gap=0.7
+    min_repeat_gap=0.7,
 )
+
 
 def get_hand_by_label(results, target: str):
     if not results.multi_hand_landmarks:
@@ -50,12 +74,15 @@ def get_hand_by_label(results, target: str):
             return results.multi_hand_landmarks[i]
     return None
 
+
 def hand_to_flat(hand_lm):
     return np.array([[lm.x, lm.y, lm.z] for lm in hand_lm.landmark], dtype=np.float64).flatten()
+
 
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True})
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -111,5 +138,7 @@ def predict():
         "sentence": sentence
     })
 
+
 if __name__ == "__main__":
+    # Local run
     app.run(host="0.0.0.0", port=8000, debug=True)

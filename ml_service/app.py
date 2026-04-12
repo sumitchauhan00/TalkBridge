@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
-import requests
 import numpy as np
 import cv2
 import pickle
@@ -16,30 +14,9 @@ CORS(app)
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "landmark_model.pkl"
-MODEL_URL = os.getenv("MODEL_URL", "").strip()
 
-
-def ensure_model():
-    if MODEL_PATH.exists():
-        return
-
-    if not MODEL_URL:
-        raise FileNotFoundError(
-            f"Model not found: {MODEL_PATH}. Please set MODEL_URL environment variable."
-        )
-
-    try:
-        resp = requests.get(MODEL_URL, timeout=300)
-        resp.raise_for_status()
-        with open(MODEL_PATH, "wb") as f:
-            f.write(resp.content)
-        print(f"[INFO] Model downloaded to: {MODEL_PATH}")
-    except Exception as e:
-        raise RuntimeError(f"Failed to download model from MODEL_URL: {e}")
-
-
-# Ensure model exists before loading
-ensure_model()
+if not MODEL_PATH.exists():
+    raise FileNotFoundError(f"Model not found: {MODEL_PATH}")
 
 with open(MODEL_PATH, "rb") as f:
     artefact = pickle.load(f)
@@ -50,21 +27,18 @@ CONFIDENCE_THRESHOLD = float(artefact.get("confidence_threshold", 0.65))
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
-    static_image_mode=False,
+    static_image_mode='true',
     max_num_hands=2,
     min_detection_confidence=0.6,
     min_tracking_confidence=0.5,
     model_complexity=1,
 )
 
-# TUNED sentence builder
+# sentence_builder.py old signature supports only timeout, max_words
 sb = SentenceBuilder(
     timeout=2.2,
-    max_words=8,
-    min_confidence=max(0.60, CONFIDENCE_THRESHOLD),  # keep aligned with model threshold
-    min_repeat_gap=0.7,
+    max_words=8
 )
-
 
 def get_hand_by_label(results, target: str):
     if not results.multi_hand_landmarks:
@@ -74,15 +48,12 @@ def get_hand_by_label(results, target: str):
             return results.multi_hand_landmarks[i]
     return None
 
-
 def hand_to_flat(hand_lm):
     return np.array([[lm.x, lm.y, lm.z] for lm in hand_lm.landmark], dtype=np.float64).flatten()
-
 
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True})
-
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -124,10 +95,10 @@ def predict():
             if confidence >= CONFIDENCE_THRESHOLD:
                 sign = label_encoder.inverse_transform([top_idx])[0]
 
-                # IMPORTANT: pass confidence into sentence builder
-                sb.add_sign(sign, confidence=confidence)
+                # old sentence_builder signature: add_sign(sign)
+                sb.add_sign(sign)
 
-    # generate sentence when timeout/max_words/stop condition reached
+    # sentence generation based on timeout/max_words
     if sb.update():
         sentence = sb.get_sentence()
         sb.reset()
@@ -138,7 +109,5 @@ def predict():
         "sentence": sentence
     })
 
-
 if __name__ == "__main__":
-    # Local run
     app.run(host="0.0.0.0", port=8000, debug=True)

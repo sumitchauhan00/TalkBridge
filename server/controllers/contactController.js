@@ -2,14 +2,10 @@ const Contact = require("../models/Contact");
 const FriendRequest = require("../models/FriendRequest");
 const User = require("../models/User");
 
-//////////////////////////////////////////////////
-// ADD CONTACT (agar direct use karte ho)
-//////////////////////////////////////////////////
 exports.addContact = async (req, res) => {
   try {
     const { userId, contactId } = req.body;
 
-    // duplicate avoid
     const exists1 = await Contact.findOne({ user: userId, contact: contactId });
     const exists2 = await Contact.findOne({ user: contactId, contact: userId });
 
@@ -18,41 +14,34 @@ exports.addContact = async (req, res) => {
 
     res.json({ message: "Contact added" });
   } catch (err) {
-    console.log(err);
+    console.log("addContact error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-//////////////////////////////////////////////////
-// GET CONTACTS
-//////////////////////////////////////////////////
 exports.getContacts = async (req, res) => {
   try {
-    const contacts = await Contact.find({
-      user: req.params.userId,
-    }).populate("contact", "username photo");
+    const contacts = await Contact.find({ user: req.params.userId })
+      .populate("contact", "_id username photo");
 
-    // frontend friendly shape
+    // frontend-compatible shape: c.contact._id
     const mapped = contacts
       .filter((c) => c.contact)
       .map((c) => ({
-        _id: c.contact._id,
-        username: c.contact.username || "Unknown",
-        photo: c.contact.photo || "",
+        contact: {
+          _id: c.contact._id,
+          username: c.contact.username || "Unknown",
+          photo: c.contact.photo || "",
+        },
       }));
 
     res.json(mapped);
   } catch (err) {
-    console.log(err);
+    console.log("getContacts error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-//////////////////////////////////////////////////
-// SEARCH USERS FOR CHAT BAR
-// - self ko exclude karega
-// - already added contacts ko exclude karega
-//////////////////////////////////////////////////
 exports.searchContactsUsers = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -60,11 +49,8 @@ exports.searchContactsUsers = async (req, res) => {
 
     if (!q) return res.json([]);
 
-    // current user's existing contacts
     const myContacts = await Contact.find({ user: userId }).select("contact");
     const contactIds = myContacts.map((c) => String(c.contact));
-
-    // include self also in exclude
     const excludeIds = [String(userId), ...contactIds];
 
     const users = await User.find({
@@ -74,14 +60,11 @@ exports.searchContactsUsers = async (req, res) => {
 
     res.json(users);
   } catch (err) {
-    console.log(err);
+    console.log("searchContactsUsers error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-//////////////////////////////////////////////////
-// DELETE CONTACT
-//////////////////////////////////////////////////
 exports.deleteContact = async (req, res) => {
   try {
     const { userId, contactId } = req.body;
@@ -105,7 +88,7 @@ exports.deleteContact = async (req, res) => {
       deletedContacts: result.deletedCount,
     });
   } catch (err) {
-    console.log(err);
+    console.log("deleteContact error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -8,74 +8,67 @@
   <link rel="stylesheet" href="video.css" />
   <link rel="stylesheet" href="global.css" />
   <link rel="stylesheet" href="toggle.css" />
-
-  <script>
-    if (localStorage.getItem("app-theme") === "dark") {
-      document.addEventListener("DOMContentLoaded", function () {
-        document.body.classList.add("dark-mode");
-      });
-
-      const style = document.createElement("style");
-      style.innerHTML = `
-        body {
-          background-color: #0f172a !important;
-          color: #f8fafc !important;
-          transition: none !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  </script>
 </head>
 <body>
-  <h2 class="title">Video Call</h2>
+  <!-- <h2 class="title">Video Call</h2> -->
 
   <div class="main">
-    <!-- MY VIDEO -->
-    <div class="video-box">
-      <video id="myVideo" autoplay muted playsinline></video>
-      <p id="myLabel" class="video-label">You</p>
+    <!-- LEFT: two users stacked -->
+    <div class="users-column">
+      <div class="video-box">
+        <video id="myVideo" autoplay muted playsinline></video>
+         <canvas id="handCanvas"></canvas>
+        <p id="myLabel" class="video-label">You</p>
+      </div>
+
+      <div class="video-box">
+        <video id="userVideo" autoplay playsinline></video>
+        <p id="friendLabel" class="video-label">Connecting...</p>
+      </div>
     </div>
 
-    <!-- AI PANEL -->
+    <!-- RIGHT: ML panel -->
     <div class="ai-box">
       <div class="ai-head">
         <h3 class="title">ML Translation</h3>
         <div id="voiceIndicator">Voice Idle</div>
       </div>
 
-      <p id="aiText">Waiting for data...</p>
-      <div id="aiHint">Signs and sentences will appear here.</div>
-
-      <div class="vc-controls">
-        <button id="micBtn" type="button">🎤 Start Listening</button>
-        <span id="micStatus">Mic Idle</span>
+      <div class="vc-controls ml-controls">
+        <button id="detectBtn" type="button" class="ml-btn detect-btn">▶ Start Detecting</button>
+        <span id="detectStatus" class="ml-status idle">Detection Idle</span>
       </div>
 
-      <p id="speechText" class="speech-text">Speech text will appear here...</p>
+      <p id="aiText">Waiting for data...</p>
 
+      <div class="vc-controls speech-controls">
+        <button id="micBtn" type="button" class="ml-btn mic-btn">🎤 Start Listening</button>
+        <span id="micStatus" class="ml-status idle">Mic Idle</span>
+      </div>
+
+      <p id="speechText" class="speech-text">Speech text and sign will appear here...</p>
       <div id="signPanel" class="sign-panel"></div>
-    </div>
-
-    <!-- FRIEND VIDEO -->
-    <div class="video-box">
-      <video id="userVideo" autoplay playsinline></video>
-      <p id="friendLabel" class="video-label">Connecting...</p>
     </div>
   </div>
 
-  <!-- CONTROLS -->
   <div class="controls">
     <button onclick="toggleMute()" class="mute">Mute</button>
     <button onclick="toggleVideo()" class="videoOff">Video Off</button>
     <button onclick="hangUp()" class="end">End</button>
   </div>
 
-  <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="hand-detection-box.js"></script>
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="video.js"></script>
+  <script src="video-core.js"></script>
+  <script src="speech-to-sign.js"></script>
+  <script src="sign-to-speech.js"></script>
   <script src="toggle.js"></script>
+  <!-- <script src="hand-detection-box.js"></script> -->
 </body>
 </html>

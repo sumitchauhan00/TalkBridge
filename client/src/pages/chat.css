@@ -479,3 +479,91 @@ body {
 #sendArea {
   display: none; /* default hidden; JS contact click pe show karega */
 }
+/* Typing dots (Instagram style) */
+#typing .typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: middle;
+}
+
+#typing .typing-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.35;
+  animation: typingDot 1s infinite ease-in-out;
+}
+
+#typing .typing-dots span:nth-child(2) { animation-delay: .15s; }
+#typing .typing-dots span:nth-child(3) { animation-delay: .30s; }
+
+@keyframes typingDot {
+  0%, 80%, 100% { opacity: .35; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* keep your existing css + add/ensure these important parts */
+
+.header {
+  background: var(--bg-card);
+  padding: 18px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+  justify-content: flex-end;
+}
+
+#chatWith {
+  margin-right: auto;
+}
+
+.video-call-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+  padding: 0;
+}
+
+.video-call-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.video-call-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.video-call-btn{
+  width:44px;height:44px;border:none;border-radius:12px;
+  background:#2563eb;color:#fff;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.video-call-btn svg{ width:22px;height:22px;fill:currentColor; }
+
+.video-call-btn{
+  width:44px;height:44px;border:none;border-radius:12px;
+  background:#2563eb;color:#fff;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-right:8px;
+}
+.video-call-btn svg{ width:22px;height:22px;fill:currentColor; }

@@ -1,31 +1,116 @@
+/* =========================================================
+   MODULE 1: ROOT VARIABLES
+   ========================================================= */
+:root {
+  --outer-gap: 6px;
+  --inner-gap: 8px;
+  --title-h: 28px;
+  --controls-h: 56px;
+  --controls-gap: 8px;
+
+  /* layout ratio */
+  --left-fr: 0.66;
+  --right-fr: 1.34;
+}
+
+/* =========================================================
+   MODULE 2: GLOBAL BASE
+   ========================================================= */
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  text-align: center;
-  padding: 20px;
   width: 100%;
-}
-
-/* Title */
-.title {
-  margin: 10px 0;
-  color: var(--text-main);
-}
-
-/* MAIN LAYOUT */
-.main {
-  display: flex;
-  gap: 18px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* VIDEO BOX */
-.video-box {
-  flex: 1.35;
-  background: black;
-  border-radius: 16px;
+  height: 100vh;
   overflow: hidden;
-  height: 550px;
+}
+
+body {
+  margin: 0;
+  padding: var(--outer-gap);
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+/* =========================================================
+   MODULE 3: TITLE
+   ========================================================= */
+.title {
+  height: var(--title-h);
+  line-height: var(--title-h);
+  margin: 0 0 var(--outer-gap) 0;
+  color: var(--text-main);
+  flex: 0 0 auto;
+}
+
+/* =========================================================
+   MODULE 4: MAIN GRID WRAPPER
+   NOTE:
+   - Duplicate .main rules the; final-priority intent preserve kiya:
+     full height below title, footer overlap allowed
+   ========================================================= */
+.main {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  margin: 0 auto;
+
+  height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h));
+  max-height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h));
+
+  display: grid;
+  grid-template-columns: 0.66fr 1.34fr;
+  gap: var(--inner-gap);
+  align-items: start;
+
+  position: relative;   /* needed for absolute children */
+  overflow: visible;    /* latest behavior: allow visual growth */
+}
+
+/* =========================================================
+   MODULE 5: LEFT COLUMN (USER VIDEOS)
+   NOTE:
+   - Duplicate grid/block styles the; latest-priority behavior preserved:
+     absolute stacked video boxes for extra height effect
+   ========================================================= */
+.users-column {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: visible;
+  display: block;
+}
+
+.users-column .video-box {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  min-height: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* top user box */
+.users-column .video-box:first-child {
+  top: 0;
+  height: 52.6%;
+}
+
+/* bottom user box */
+.users-column .video-box:last-child {
+  top: 53.5%;
+  height: 50.5%;
+}
+
+/* shared video box styling */
+.video-box {
+  min-height: 0;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
   position: relative;
   box-shadow: var(--shadow);
 }
@@ -34,44 +119,68 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  background: #000;
 }
 
-/* LABELS */
 #myLabel,
 #friendLabel {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  bottom: 8px;
+  left: 8px;
   background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 6px 10px;
+  color: #fff;
+  padding: 5px 9px;
   border-radius: 8px;
+  font-size: 12px;
 }
 
-/* AI BOX */
+/* =========================================================
+   MODULE 6: RIGHT COLUMN (ML PANEL)
+   NOTE:
+   - Final requested behavior: AI box controls outer box se 2px upar
+   - Isliye absolute anchoring use kiya (robust, no formula conflicts)
+   ========================================================= */
+/* AI box height increase: controls se gap 2px -> 0px (taller) */
 .ai-box {
-  flex: 3.3;
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  /* was +2px, now 0px => height increases */
+  bottom: calc(var(--outer-gap) + var(--controls-h) + 0px);
+
+  left: calc(((100% - var(--inner-gap)) * 0.66 / 2) + var(--inner-gap));
+
+  min-height: 0;
+  max-height: none;
+  height: auto;
+  align-self: auto;
+
+  overflow: hidden;
   background: var(--bg-card);
   color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  gap: 10px;
+  gap: 8px;
+  padding: 10px;
 }
 
-/* AI heading row */
+.ai-head,
+.vc-controls,
+#aiText,
+.speech-text {
+  flex-shrink: 0;
+}
+
 .ai-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2px;
 }
 
-/* voice indicator */
 #voiceIndicator {
   font-size: 12px;
   color: var(--text-main);
@@ -90,99 +199,177 @@ body {
   border-radius: 50%;
   background: #9ca3af;
 }
-#voiceIndicator.speaking::before {
-  background: #22c55e;
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.2);
-}
 
-/* ML text */
-#aiText {
-  margin-top: 4px;
-  width: 100%;
-  text-align: left;
-  font-size: 1rem;
-  line-height: 1.45;
-  font-weight: 600;
-  color: var(--text-main);
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 14px;
-  min-height: 78px;
-  max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  transition: 0.2s ease;
-}
-#aiText.live {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
-}
-#aiText.sentence {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
-  background: rgba(34, 197, 94, 0.07);
-}
-
-#aiHint {
-  margin-top: 0;
-  font-size: 12px;
-  color: #94a3b8;
-  text-align: left;
-}
-
-/* Speech controls */
 .vc-controls {
-  margin-top: 2px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-#micBtn {
+.ml-btn {
   border: none;
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 9px 12px;
   font-weight: 600;
   cursor: pointer;
+  color: #fff;
   background: #2563eb;
-  color: white;
-  transition: 0.2s ease;
 }
-#micBtn:hover {
+.ml-btn:hover {
   background: #1d4ed8;
 }
-#micBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
-#micStatus {
+.ml-status {
   font-size: 12px;
   color: #94a3b8;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.04);
 }
 
-/* recognized text */
-.speech-text {
-  margin-top: 0;
-  width: 100%;
+#aiText {
   text-align: left;
-  font-size: 0.98rem;
-  line-height: 1.45;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--text-main);
   background: rgba(15, 23, 42, 0.04);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 10px 12px;
-  min-height: 44px;
-  max-height: 84px;
+  min-height: 56px;
+  max-height: 88px;
   overflow-y: auto;
-  color: var(--text-main);
   white-space: pre-wrap;
-  word-break: break-word;
 }
 
+.speech-text {
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 9px 10px;
+  min-height: 36px;
+  max-height: 66px;
+  overflow-y: auto;
+  color: var(--text-main);
+}
+
+.sign-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  align-content: start;
+  padding-right: 2px;
+}
+
+/* =========================================================
+   MODULE 7: BOTTOM CONTROLS (OUTER BOX)
+   NOTE:
+   - Yehi "outer box" hai jiske reference se ai-box bottom set hai
+   ========================================================= */
+.controls {
+  position: fixed;
+  right: var(--outer-gap);
+  bottom: var(--outer-gap);
+  z-index: 1000;
+
+  flex: 0 0 var(--controls-h);
+  height: var(--controls-h);
+  width: calc((100% - (var(--outer-gap) * 2) - var(--inner-gap)) * 1.34 / 2);
+  margin: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  backdrop-filter: blur(2px);
+}
+
+.controls button {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.mute { background: #f59e0b; }
+.videoOff { background: gray; }
+.end { background: red; }
+
+/* =========================================================
+   MODULE 8: TOAST
+   ========================================================= */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  right: auto;
+  transform: translate(-50%, -50%) scale(0.96);
+  background: #111827;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  opacity: 0;
+  transition: 0.25s ease;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* =========================================================
+   MODULE 9: RESPONSIVE
+   NOTE:
+   - Structure break avoid karne ke liye desktop layout keep.
+   - Existing responsive collapse removed intentionally.
+   ========================================================= */
+@media (max-width: 1000px) {
+  .main {
+    grid-template-columns: 0.66fr 1.34fr;
+    height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h));
+    max-height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h));
+    overflow: visible;
+  }
+
+  .controls {
+    left: auto;
+    right: var(--outer-gap);
+    width: calc((100% - (var(--outer-gap) * 2) - var(--inner-gap)) * 1.34 / 2);
+    flex-wrap: nowrap;
+  }
+
+}
+/* FORCE increase AI box height */
+.ai-box{
+  top: 0 !important;
+  right: 0 !important;
+  left: calc(((100% - var(--inner-gap)) * 0.66 / 2) + var(--inner-gap)) !important;
+
+  /* fixed explicit height: controls se just upar + extra grow */
+  height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h) - var(--controls-h) + 24px) !important;
+  max-height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h) - var(--controls-h) + 24px) !important;
+  min-height: calc(100vh - (var(--outer-gap) * 2) - var(--title-h) - var(--controls-h) + 24px) !important;
+
+  bottom: auto !important;   /* important: bottom constraint hatao */
+}
 /* =========================
    SIGN PANEL (FINAL)
    ========================= */
@@ -301,393 +488,7 @@ body {
   transition: opacity 280ms ease, transform 280ms ease, filter 280ms ease;
 }
 
-/* CONTROLS */
-.controls {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-.controls button {
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-.mute {
-  background: #f59e0b;
-}
-.videoOff {
-  background: gray;
-}
-.end {
-  background: red;
-}
-
-/* TOAST */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: #111827;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 12px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: 0.3s;
-}
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}body {
-  text-align: center;
-  padding: 20px;
-  width: 100%;
-}
-
-/* Title */
-.title {
-  margin: 10px 0;
-  color: var(--text-main);
-}
-
-/* MAIN LAYOUT */
-.main {
-  display: flex;
-  gap: 18px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* VIDEO BOX */
-.video-box {
-  flex: 1.35;
-  background: black;
-  border-radius: 16px;
-  overflow: hidden;
-  height: 550px;
-  position: relative;
-  box-shadow: var(--shadow);
-}
-
-.video-box video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* LABELS */
-#myLabel,
-#friendLabel {
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 8px;
-}
-
-/* AI BOX */
-.ai-box {
-  flex: 3.3;
-  background: var(--bg-card);
-  color: var(--text-main);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  padding: 16px;
-  gap: 10px;
-}
-
-/* AI heading row */
-.ai-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2px;
-}
-
-/* voice indicator */
-#voiceIndicator {
-  font-size: 12px;
-  color: var(--text-main);
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid var(--border-color);
-  padding: 6px 10px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-#voiceIndicator::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #9ca3af;
-}
-#voiceIndicator.speaking::before {
-  background: #22c55e;
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.2);
-}
-
-/* ML text */
-#aiText {
-  margin-top: 4px;
-  width: 100%;
-  text-align: left;
-  font-size: 1rem;
-  line-height: 1.45;
-  font-weight: 600;
-  color: var(--text-main);
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 14px;
-  min-height: 78px;
-  max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  transition: 0.2s ease;
-}
-#aiText.live {
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
-}
-#aiText.sentence {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
-  background: rgba(34, 197, 94, 0.07);
-}
-
-#aiHint {
-  margin-top: 0;
-  font-size: 12px;
-  color: #94a3b8;
-  text-align: left;
-}
-
-/* Speech controls */
-.vc-controls {
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#micBtn {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  background: #2563eb;
-  color: white;
-  transition: 0.2s ease;
-}
-#micBtn:hover {
-  background: #1d4ed8;
-}
-#micBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-#micStatus {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-/* recognized text */
-.speech-text {
-  margin-top: 0;
-  width: 100%;
-  text-align: left;
-  font-size: 0.98rem;
-  line-height: 1.45;
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 10px 12px;
-  min-height: 44px;
-  max-height: 84px;
-  overflow-y: auto;
-  color: var(--text-main);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* =========================
-   SIGN PANEL (FINAL)
-   ========================= */
-
-.sign-panel {
-  margin-top: 2px;
-  width: 100%;
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  align-items: stretch;
-  justify-items: stretch;
-  overflow: hidden;
-  max-height: none;
-  padding: 6px 2px 2px;
-
-  opacity: 0;
-  transform: translateY(8px) scale(0.985);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-  pointer-events: none;
-}
-
-.sign-panel.show {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-}
-.sign-panel.hide {
-  opacity: 0;
-  transform: translateY(8px) scale(0.985);
-  pointer-events: none;
-}
-
-.sign-item {
-  width: 100%;
-  min-width: 0;
-  aspect-ratio: 1 / 1;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #f8fafc;
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.sign-item img,
-.sign-item video {
-  width: 100% !important;
-  height: 100% !important;
-  flex: 1;
-  object-fit: cover; /* full box cover */
-  object-position: center;
-  display: block;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  margin: 0;
-  background: #fff;
-  box-shadow: none;
-}
-
-.sign-item span {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: 0;
-  padding: 4px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.05));
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* sentence media */
-.sign-item.sentence-media {
-  grid-column: 1 / -1;
-  aspect-ratio: 16 / 9;
-  max-height: 260px;
-}
-
-/* missing fallback */
-.missing-sign {
-  width: 100%;
-  height: 100%;
-  border: 1px dashed #94a3b8;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #475569;
-  font-weight: 700;
-  background: #f8fafc;
-}
-
-/* one-by-one animation */
-.sign-item.pre {
-  opacity: 0;
-  transform: translateY(10px) scale(0.96);
-  filter: blur(2px);
-}
-.sign-item.show {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0);
-  transition: opacity 320ms ease, transform 320ms ease, filter 320ms ease;
-}
-.sign-item.hide {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.96);
-  filter: blur(2px);
-  transition: opacity 280ms ease, transform 280ms ease, filter 280ms ease;
-}
-
-/* CONTROLS */
-.controls {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-.controls button {
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 600;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-.mute {
-  background: #f59e0b;
-}
-.videoOff {
-  background: gray;
-}
-.end {
-  background: red;
-}
-
-/* TOAST */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: #111827;
-  color: white;
-  padding: 14px 20px;
-  border-radius: 12px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: 0.3s;
-}
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
+/* duplicate animation rule */
 .sign-item.pre { opacity: 0; }
 .sign-item.show { opacity: 1; transition: all .32s ease; }
 
@@ -701,6 +502,7 @@ body {
   max-width: 220px;
   aspect-ratio: 1 / 1;
 }
+
 /* default */
 .sign-panel {
   display: grid;
@@ -724,3 +526,15 @@ body {
   z-index: 0;
 }
 
+.video-box{
+  position: relative;
+}
+
+#handCanvas{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9;
+}

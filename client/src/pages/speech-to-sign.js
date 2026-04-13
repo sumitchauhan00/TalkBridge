@@ -3,6 +3,8 @@
   const micStatus = document.getElementById("micStatus");
   const speechTextEl = document.getElementById("speechText");
   const signPanel = document.getElementById("signPanel");
+    const baseURL = window.location.origin;
+
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
@@ -165,7 +167,7 @@
   function sentenceMediaCandidates(text) {
     const key = sentenceKey(text);
     if (!key) return [];
-    const base = `http://localhost:5000/signs/sentences/${key}`;
+  const base = `${baseURL}/signs/sentences/${key}`;
     return [
       { type: "video", url: `${base}.mp4` },
       { type: "img", url: `${base}.gif` },
@@ -174,13 +176,13 @@
   }
 
   function wordImageUrl(word) {
-    return `http://localhost:5000/signs/words/${word}.png`;
+    return `${baseURL}/signs/words/${word}.png`;
   }
   function numberImageUrl(num) {
-    return `http://localhost:5000/signs/numbers/${String(num).trim()}.png`;
+    return `${baseURL}/signs/numbers/${String(num).trim()}.png`;
   }
   function letterImageUrl(ch) {
-    return `http://localhost:5000/signs/alphabets/${ch}.png`;
+    return `${baseURL}/signs/alphabets/${ch}.png`;
   }
 
   // ordered image load helper to avoid aage-piche render

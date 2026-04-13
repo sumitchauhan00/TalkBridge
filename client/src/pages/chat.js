@@ -1,5 +1,6 @@
-
-const socket = io("http://localhost:5000");
+// Add at the top:
+const baseURL = window.location.origin;
+const socket = io(baseURL);
 
 //////////////////////////////////////////////////
 // ELEMENTS
@@ -27,7 +28,7 @@ const myId = user._id;
 //////////////////////////////////////////////////
 // GET LATEST PROFILE
 //////////////////////////////////////////////////
-fetch(`http://localhost:5000/api/auth/user/${myId}`)
+fetch(`${baseURL}/api/auth/user/${myId}`)
   .then(res => res.json())
   .then(fresh => {
     user = fresh;
@@ -62,7 +63,7 @@ let typingDiv = null;
 function loadContacts() {
   contactBox.innerHTML = "";
 
-  fetch(`http://localhost:5000/api/contacts/${myId}`)
+  fetch(`${baseURL}/api/contacts/${myId}`)
     .then(res => res.json())
     .then(data => {
 
@@ -146,7 +147,7 @@ function loadContacts() {
           //////////////////////////////////////////////////
           // LOAD OLD MESSAGES
           //////////////////////////////////////////////////
-          fetch(`http://localhost:5000/api/messages/${myId}/${friendId}`)
+          fetch(`${baseURL}/api/messages/${myId}/${friendId}`)
             .then(res => res.json())
             .then(msgs => {
               msgs.forEach(m => {
@@ -387,7 +388,7 @@ searchInput.addEventListener("input", () => {
 
   if (!text) return;
 
-  fetch(`http://localhost:5000/api/auth/search/${text}`)
+  fetch(`${baseURL}/api/auth/search/${text}`)
     .then(res => res.json())
     .then(users => {
 
@@ -412,19 +413,19 @@ searchInput.addEventListener("input", () => {
         btn.innerText = "Add";
 
         btn.onclick = () => {
-  fetch("http://localhost:5000/api/requests/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: myId,
-      to: u._id
-    })
-  }).then(() => {
-    alert("Request sent");
-    searchInput.value = "";
-    searchResult.innerHTML = "";
-  });
-};
+          fetch(`${baseURL}/api/requests/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: myId,
+              to: u._id
+            })
+          }).then(() => {
+            alert("Request sent");
+            searchInput.value = "";
+            searchResult.innerHTML = "";
+          });
+        };
 
         div.appendChild(btn);
         searchResult.appendChild(div);
@@ -450,7 +451,7 @@ function loadFriendRequests() {
 
   notificationBox.innerHTML = "";
 
-  fetch(`http://localhost:5000/api/requests/${myId}`)
+  fetch(`${baseURL}/api/requests/${myId}`)
     .then(res => res.json())
     .then(requests => {
 
@@ -477,7 +478,7 @@ function loadFriendRequests() {
         acceptBtn.innerText = "Accept";
 
         acceptBtn.onclick = () => {
-          fetch("http://localhost:5000/api/requests/accept", {
+          fetch(`${baseURL}/api/requests/accept`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestId: r._id })
@@ -496,7 +497,7 @@ function loadFriendRequests() {
         rejectBtn.innerText = "Reject";
 
         rejectBtn.onclick = () => {
-          fetch("http://localhost:5000/api/requests/reject", {
+          fetch(`${baseURL}/api/requests/reject`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestId: r._id })

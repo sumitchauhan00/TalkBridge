@@ -30,6 +30,9 @@ function renderProfile(u) {
 
 renderProfile(user);
 
+// ==== DYNAMIC BASE URL ====
+const baseURL = window.location.origin;
+
 // show chosen file name (optional)
 if (photoInput) {
   photoInput.addEventListener("change", () => {
@@ -46,7 +49,7 @@ async function savePhoto() {
     const fd = new FormData();
     fd.append("photo", file); // IMPORTANT: key must be "photo"
 
-    const res = await fetch(`http://localhost:5000/api/auth/photo/${user._id}`, {
+    const res = await fetch(`${baseURL}/api/auth/photo/${user._id}`, {
       method: "POST",
       body: fd, // DO NOT set Content-Type manually
     });

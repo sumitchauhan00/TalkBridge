@@ -4,6 +4,9 @@
     return;
   }
 
+  // Add baseURL for dynamic API calls
+  const baseURL = window.location.origin;
+
   const { myId, els } = window.ChatState;
   const { searchInput, searchResult, notificationBox } = els;
 
@@ -13,7 +16,7 @@
     if (!text) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/search/${text}`);
+      const res = await fetch(`${baseURL}/api/auth/search/${text}`);
       const users = await res.json();
 
       if (!users.length) {
@@ -35,7 +38,7 @@
         btn.innerText = "Add";
         btn.onclick = async () => {
           try {
-            const res = await fetch("http://localhost:5000/api/requests/send", {
+            const res = await fetch(`${baseURL}/api/requests/send`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ from: myId, to: u._id }),
@@ -67,7 +70,7 @@
     notificationBox.innerHTML = "";
 
     try {
-      const res = await fetch(`http://localhost:5000/api/requests/${myId}`);
+      const res = await fetch(`${baseURL}/api/requests/${myId}`);
       const requests = await res.json();
 
       if (!requests.length) {
@@ -86,7 +89,7 @@
         const acceptBtn = document.createElement("button");
         acceptBtn.innerText = "Accept";
         acceptBtn.onclick = async () => {
-          await fetch("http://localhost:5000/api/requests/accept", {
+          await fetch(`${baseURL}/api/requests/accept`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestId: r._id }),
@@ -98,7 +101,7 @@
         const rejectBtn = document.createElement("button");
         rejectBtn.innerText = "Reject";
         rejectBtn.onclick = async () => {
-          await fetch("http://localhost:5000/api/requests/reject", {
+          await fetch(`${baseURL}/api/requests/reject`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestId: r._id }),

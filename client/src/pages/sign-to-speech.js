@@ -21,6 +21,9 @@
   const detectStatus = document.getElementById("detectStatus");
   const aiTextEl = document.getElementById("aiText");
 
+  // ==== DYNAMIC BASE URL ====
+  const baseURL = window.location.origin;
+
   function setDetectUI(active) {
     if (detectBtn) detectBtn.innerText = active ? "⏹ Stop Detecting" : "▶ Start Detecting";
     if (detectStatus) {
@@ -120,7 +123,8 @@
           fd.append("frame", blob, "frame.jpg");
 
           try {
-            const res = await fetch("http://localhost:5000/api/ml/predict", {
+            // ====== ONLY THIS LINE CHANGED ======
+            const res = await fetch(`${baseURL}/api/ml/predict`, {
               method: "POST",
               body: fd,
             });

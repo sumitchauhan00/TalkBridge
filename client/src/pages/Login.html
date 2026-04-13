@@ -54,6 +54,9 @@ if (localStorage.getItem('app-theme') === 'dark') {
 
 <!-- after your HTML inputs/buttons -->
 <script>
+// ==== Dynamic base URL ====
+const baseURL = window.location.origin;
+
 const usernameInput = document.getElementById("username");
 const uMsg = document.getElementById("uMsg");
 let timer;
@@ -64,7 +67,7 @@ usernameInput.addEventListener("input", () => {
   clearTimeout(timer);
   if (!value) return;
   timer = setTimeout(() => {
-    fetch(`http://localhost:5000/api/auth/search/${value}`)
+    fetch(`${baseURL}/api/auth/search/${value}`)
       .then(res => res.json())
       .then(users => {
         const found = users.find(u => u.username === value);
@@ -92,7 +95,7 @@ async function login() {
     return;
   }
   try {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+    const res = await fetch(`${baseURL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),

@@ -62,6 +62,9 @@ if (localStorage.getItem('app-theme') === 'dark') {
 </div>
 
 <script>
+  // ==== Dynamic base URL ====
+  const baseURL = window.location.origin;
+
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const confirmInput = document.getElementById("confirm");
@@ -82,7 +85,7 @@ if (localStorage.getItem('app-theme') === 'dark') {
       return;
     }
 
-    fetch(`http://localhost:5000/api/auth/search/${value}`)
+    fetch(`${baseURL}/api/auth/search/${value}`)
       .then(res => res.json())
       .then(users => {
         const found = users.find(u => u.username === value);
@@ -141,7 +144,7 @@ if (localStorage.getItem('app-theme') === 'dark') {
       return;
     }
 
-    fetch("http://localhost:5000/api/auth/signup", {
+    fetch(`${baseURL}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),

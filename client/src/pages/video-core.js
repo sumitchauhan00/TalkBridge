@@ -1,5 +1,7 @@
 (() => {
-  const socket = io("http://localhost:5000");
+  // ==== DYNAMIC BASE URL ====
+  const baseURL = window.location.origin;
+  const socket = io(baseURL);
 
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) {
@@ -61,7 +63,7 @@
   async function loadFriendName() {
     if (!realFriend || !friendLabel) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/user/${realFriend}`);
+      const res = await fetch(`${baseURL}/api/auth/user/${realFriend}`);
       const data = await res.json();
       friendLabel.innerText = data.username || "Unknown";
     } catch {

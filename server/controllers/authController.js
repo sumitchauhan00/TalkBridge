@@ -91,7 +91,10 @@ exports.updatePhoto = async (req, res) => {
       return res.status(400).json({ message: "Photo file required" });
     }
 
-    const photoUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    // ==== DYNAMIC base URL generation here ====
+    // will work for both local and deployed (Render, etc)
+    const hostUrl = req.protocol + "://" + req.get("host");
+    const photoUrl = `${hostUrl}/uploads/${req.file.filename}`;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,

@@ -1,5 +1,7 @@
 (function () {
-  const socket = io("http://localhost:5000");
+  // ---- Add this one line for dynamic origin ----
+  const baseURL = window.location.origin;
+  const socket = io(baseURL); // changed here
 
   const els = {
     typingBox: document.getElementById("typing"),
@@ -18,33 +20,33 @@
     videoCallBtn: document.getElementById("videoCallBtn"),
   };
 
-// add this near top after element selections
-const headerEl = document.querySelector(".chat-area .header");
+  // add this near top after element selections
+  const headerEl = document.querySelector(".chat-area .header");
 
-// ensure button exists (create if missing)
-let videoCallBtn = document.getElementById("videoCallBtn");
-if (!videoCallBtn && headerEl) {
-  videoCallBtn = document.createElement("button");
-  videoCallBtn.id = "videoCallBtn";
-  videoCallBtn.className = "video-call-btn";
-  videoCallBtn.title = "Start Video Call";
-  videoCallBtn.setAttribute("aria-label", "Start Video Call");
-  videoCallBtn.innerHTML = `
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M15 10.5V6a2 2 0 0 0-2-2H5A2 2 0 0 0 3 6v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4.5l6 4V6.5l-6 4z"></path>
-    </svg>
-  `;
-  // theme toggle se just pehle insert
-  const themeBtn = document.getElementById("theme-toggle");
-  if (themeBtn) headerEl.insertBefore(videoCallBtn, themeBtn);
-  else headerEl.appendChild(videoCallBtn);
-}
+  // ensure button exists (create if missing)
+  let videoCallBtn = document.getElementById("videoCallBtn");
+  if (!videoCallBtn && headerEl) {
+    videoCallBtn = document.createElement("button");
+    videoCallBtn.id = "videoCallBtn";
+    videoCallBtn.className = "video-call-btn";
+    videoCallBtn.title = "Start Video Call";
+    videoCallBtn.setAttribute("aria-label", "Start Video Call");
+    videoCallBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 10.5V6a2 2 0 0 0-2-2H5A2 2 0 0 0 3 6v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4.5l6 4V6.5l-6 4z"></path>
+      </svg>
+    `;
+    // theme toggle se just pehle insert
+    const themeBtn = document.getElementById("theme-toggle");
+    if (themeBtn) headerEl.insertBefore(videoCallBtn, themeBtn);
+    else headerEl.appendChild(videoCallBtn);
+  }
 
-// always hidden initially
-if (videoCallBtn) {
-  videoCallBtn.style.display = "none";
-  videoCallBtn.onclick = () => window.startCall && window.startCall();
-}
+  // always hidden initially
+  if (videoCallBtn) {
+    videoCallBtn.style.display = "none";
+    videoCallBtn.onclick = () => window.startCall && window.startCall();
+  }
 
   let user = JSON.parse(localStorage.getItem("user"));
   if (!user || !user._id) {
@@ -75,7 +77,7 @@ if (videoCallBtn) {
   if (els.videoCallBtn) els.videoCallBtn.style.display = "none";
 
   // refresh self profile
-  fetch(`http://localhost:5000/api/auth/user/${myId}`)
+  fetch(`${baseURL}/api/auth/user/${myId}`) // changed here
     .then(async (res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();

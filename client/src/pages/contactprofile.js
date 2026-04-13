@@ -21,6 +21,9 @@ if (usernameEl) {
   usernameEl.innerText = contact.username || "Unknown";
 }
 
+// ==== DYNAMIC BASE URL ====
+const baseURL = window.location.origin;
+
 //////////////////////////////////////////////////
 // DELETE CONTACT
 //////////////////////////////////////////////////
@@ -29,7 +32,7 @@ async function deleteContact() {
   if (!confirmDelete) return;
 
   try {
-    const res = await fetch("http://localhost:5000/api/contacts/remove", {
+    const res = await fetch(`${baseURL}/api/contacts/remove`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -8,6 +8,9 @@
   }
   if (!ensureState()) return;
 
+  // Dynamic API base URL
+  const baseURL = window.location.origin;
+
   const { myId, socket, els } = window.ChatState;
   const { contactBox, chatTitle, chatBox, welcomeBox, sendArea } = els;
 
@@ -46,7 +49,7 @@
   async function loadContacts() {
     contactBox.innerHTML = "Loading...";
     try {
-      const res = await fetch(`http://localhost:5000/api/contacts/${myId}`);
+      const res = await fetch(`${baseURL}/api/contacts/${myId}`);
       const txt = await res.text();
 
       let data = [];
@@ -141,7 +144,7 @@
     if (badge) badge.remove();
 
     try {
-      const res = await fetch(`http://localhost:5000/api/messages/${state.myId}/${person._id}`);
+      const res = await fetch(`${baseURL}/api/messages/${state.myId}/${person._id}`);
       const msgs = await res.json();
       msgs.forEach((m) => {
         window.addMessage(m.sender === state.myId ? "me" : "other", m.message);

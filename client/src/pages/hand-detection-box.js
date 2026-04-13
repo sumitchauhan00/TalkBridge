@@ -21,7 +21,7 @@
   const ctx = canvas.getContext("2d");
 
   // ---------------- CONFIG ----------------
-  const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = window.location.origin;
   const PREDICT_INTERVAL_MS = 350;
   const COUNTDOWN_SECONDS = 2.8;
   const MIN_CONFIDENCE_TO_TRACK = 0.45;

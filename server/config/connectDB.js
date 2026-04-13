@@ -7,10 +7,7 @@ const connectDB = async () => {
       process.env.MONGO_URI ||
       "mongodb://127.0.0.1:27017/chatapp";
 
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoUri); // <- removed old options here
 
     console.log("Database connected:", mongoUri.includes("localhost") ? "localhost" : "Atlas/Prod");
   } catch (error) {

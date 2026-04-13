@@ -3,7 +3,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const path = require("path");
 
-const mlRoutes = require("./routes/mlroutes");
+const mlroutes = require("./routes/mlroutes");
 
 // ROUTES
 const authRoutes = require("./routes/authRoutes");
@@ -26,7 +26,7 @@ app.use("/signs", express.static(path.join(__dirname, "public", "signs")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // IMPORTANT
 
 // API ROUTES
-app.use("/api/ml", mlRoutes);
+app.use("/api/ml", mlroutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/messages", messageRoutes);

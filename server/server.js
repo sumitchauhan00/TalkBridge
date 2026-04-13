@@ -3,7 +3,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const path = require("path");
 
-const mlRoutes = require("./routes/mlroutes");
+const mlRoutes = require("./routes/mlRoutes");
 
 // ROUTES
 const authRoutes = require("./routes/authRoutes");

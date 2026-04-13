@@ -23,12 +23,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/signs", express.static(path.join(__dirname, "public", "signs")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// *** NEW: Serve static front-end pages ***
-app.use(express.static(path.join(__dirname, "../pages")));
+// STATIC: proper path set karein
+app.use(express.static(path.join(__dirname, '../client/src/pages')));
 
-// *** On root, send default front-end page, e.g., Login.html ***
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../pages/Login.html")); // Change if default page is different
+// Root pe Login.html serve karna ho:
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/src/pages/Login.html'));
 });
 
 // API ROUTES (as is)

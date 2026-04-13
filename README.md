@@ -61,7 +61,7 @@ chat-app/
 ⚙️ Setup Instructions
 1. Clone repository
 bash
-git clone https://github.com/sumitchauhan00/DEAFtalk.git
+git clone https://github.com/sumitchauhan00/TalkBridge.git
 cd DEAFtalk
 2. Install Node dependencies
 bash

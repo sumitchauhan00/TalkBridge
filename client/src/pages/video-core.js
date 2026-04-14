@@ -1,5 +1,4 @@
 (() => {
-  // ==== DYNAMIC BASE URL ====
   const baseURL = window.location.origin;
   const socket = io(baseURL);
 
@@ -35,7 +34,7 @@
   let peer;
   let remoteStream;
 
-  // Perfect negotiation
+  // Offer/answer negotiation state
   let makingOffer = false;
   let ignoreOffer = false;
   let isSettingRemoteAnswerPending = false;
@@ -83,6 +82,20 @@
     });
   }
 
+  async function getAndAddLocalStream() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (myVideo) {
+        myVideo.srcObject = localStream;
+        myVideo.play?.().catch(() => {});
+      }
+      ensureLocalTracksAdded();
+    } catch (e) {
+      showAlert("Camera/Mic access denied or not available");
+      console.warn("getUserMedia error:", e);
+    }
+  }
+
   function createPeer() {
     if (peer) return;
 
@@ -91,6 +104,7 @@
     });
 
     peer.ontrack = (event) => {
+      console.log("ontrack", event.streams);
       const [stream] = event.streams;
       if (stream && userVideo) {
         remoteStream = stream;
@@ -138,26 +152,18 @@
     realFriend = from;
     loadFriendName();
 
+    // Always get fresh local stream & add before peer/answer
+    await getAndAddLocalStream();
     if (!peer) createPeer();
-
-    if (!localStream) {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (myVideo) {
-          myVideo.srcObject = localStream;
-          myVideo.play?.().catch(() => {});
-        }
-        ensureLocalTracksAdded();
-      } catch {
-        console.warn("Receiver local media unavailable; recv-only");
-      }
-    }
   });
 
   socket.on("webrtc-description", async ({ from, description }) => {
     try {
       realFriend = from;
-      if (!peer) createPeer();
+      if (!peer) {
+        await getAndAddLocalStream();
+        createPeer();
+      }
 
       const readyForOffer =
         !makingOffer && (peer.signalingState === "stable" || isSettingRemoteAnswerPending);
@@ -204,36 +210,15 @@
   });
 
   async function start() {
-    try {
-      if (!realFriend) realFriend = localStorage.getItem("callTo");
+    if (!realFriend) realFriend = localStorage.getItem("callTo");
 
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (myVideo) {
-          myVideo.srcObject = localStream;
-          myVideo.play?.().catch(() => {});
-        }
-      } catch (e) {
-        console.warn("Local media unavailable:", e);
-        showAlert("Camera/Mic not available on this tab");
-      }
+    await getAndAddLocalStream();
+    createPeer();
 
-      // Keep myVideo and localStream in sync
-      if (myVideo?.srcObject && localStream && myVideo.srcObject !== localStream) {
-        myVideo.srcObject = localStream;
-      }
+    window.AppSpeechToSign?.init();
+    window.AppSignToSpeech?.init();
 
-      createPeer();
-      ensureLocalTracksAdded();
-
-      window.AppSpeechToSign?.init();
-      window.AppSignToSpeech?.init();
-
-      if (isCaller && realFriend) socket.emit("call-user", { to: realFriend, from: myId });
-    } catch (err) {
-      console.error("Start error:", err);
-      showAlert("Could not start call");
-    }
+    if (isCaller && realFriend) socket.emit("call-user", { to: realFriend, from: myId });
   }
 
   setInterval(() => {
@@ -245,7 +230,6 @@
 
   function cleanupAndExit() {
     if (localStream) localStream.getTracks().forEach((track) => track.stop());
-
     if (peer) {
       peer.onnegotiationneeded = null;
       peer.onicecandidate = null;
@@ -283,7 +267,6 @@
     showAlert(enabled ? "Mic Off" : "Mic On");
   }
 
-  // ✅ FIXED: robust camera toggle
   function toggleVideo() {
     const activeStream = (myVideo && myVideo.srcObject) ? myVideo.srcObject : localStream;
     if (!activeStream) {
@@ -300,7 +283,6 @@
     const willEnable = !tracks[0].enabled;
     tracks.forEach((t) => (t.enabled = willEnable));
 
-    // Keep localStream in sync if different object
     if (localStream && localStream !== activeStream) {
       localStream.getVideoTracks().forEach((t) => (t.enabled = willEnable));
     }
@@ -313,19 +295,16 @@
 
     showAlert(willEnable ? "Camera On" : "Camera Off");
 
-    // Notify hand-detection-box.js
     window.dispatchEvent(
       new CustomEvent("app:video-toggled", { detail: { enabled: willEnable } })
     );
   }
 
-  // expose globals for HTML onclick
   window.hangUp = hangUp;
   window.declineCall = declineCall;
   window.toggleMute = toggleMute;
   window.toggleVideo = toggleVideo;
 
-  // shared app bus
   window.VideoApp = {
     socket,
     myId,

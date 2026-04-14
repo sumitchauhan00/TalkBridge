@@ -27,7 +27,7 @@ CONFIDENCE_THRESHOLD = float(artefact.get("confidence_threshold", 0.65))
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
-    static_image_mode='true',
+    static_image_mode=True,
     max_num_hands=2,
     min_detection_confidence=0.6,
     min_tracking_confidence=0.5,
@@ -61,14 +61,31 @@ def predict():
         return jsonify({"error": "No frame file"}), 400
 
     file = request.files["frame"]
-    data = np.frombuffer(file.read(), np.uint8)
-    frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
-    if frame is None:
-        return jsonify({"error": "Invalid image"}), 400
+    img_bytes = file.read()
+    if not img_bytes or len(img_bytes) < 1000:
+        return jsonify({"error": "Empty or very small image upload"}), 400
 
-    frame = cv2.flip(frame, 1)
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = hands.process(rgb)
+    data = np.frombuffer(img_bytes, np.uint8)
+    frame = cv2.imdecode(data, cv2.IMREAD_COLOR)
+    if frame is None or frame.size == 0 or frame.ndim != 3 or frame.shape[2] != 3:
+        return jsonify({"error": "Malformed/corrupt image"}), 400
+
+    try:
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    except Exception as e:
+        return jsonify({"error": "RGB conversion failed", "details": str(e)}), 400
+
+    try:
+        with mp_hands.Hands(    # create a new instance for EVERY request!
+            static_image_mode=True,
+            max_num_hands=2,
+            min_detection_confidence=0.6,
+            min_tracking_confidence=0.5,
+            model_complexity=1
+        ) as hands:
+            results = hands.process(rgb)
+    except Exception as e:
+        return jsonify({"error": "MediaPipe crash", "details": str(e)}), 500
 
     sign = ""
     confidence = 0.0
@@ -94,11 +111,8 @@ def predict():
 
             if confidence >= CONFIDENCE_THRESHOLD:
                 sign = label_encoder.inverse_transform([top_idx])[0]
-
-                # old sentence_builder signature: add_sign(sign)
                 sb.add_sign(sign)
 
-    # sentence generation based on timeout/max_words
     if sb.update():
         sentence = sb.get_sentence()
         sb.reset()

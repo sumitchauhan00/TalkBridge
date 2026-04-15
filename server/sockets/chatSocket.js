@@ -61,18 +61,18 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("make-answer", ({ to, answer }) => {
+    socket.on("make-answer", ({ to, answer, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("answer-made", { answer });
+          io.to(sid).emit("answer-made", { answer, from });
         });
       }
     });
 
-    socket.on("ice-candidate", ({ to, candidate }) => {
+    socket.on("ice-candidate", ({ to, candidate, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("ice-candidate", { candidate });
+          io.to(sid).emit("ice-candidate", { candidate, from });
         });
       }
     });
@@ -88,10 +88,10 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("renegotiate-answer", ({ to, answer }) => {
+    socket.on("renegotiate-answer", ({ to, answer, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("renegotiate-answer", { answer });
+          io.to(sid).emit("renegotiate-answer", { answer, from });
         });
       }
     });
@@ -99,18 +99,18 @@ module.exports = (io) => {
     //////////////////////////////////////////////////
     // DECLINE / END
     //////////////////////////////////////////////////
-    socket.on("call-declined", ({ to }) => {
+    socket.on("call-declined", ({ to, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("call-declined");
+          io.to(sid).emit("call-declined", { from });
         });
       }
     });
 
-    socket.on("end-call", ({ to }) => {
+    socket.on("end-call", ({ to, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("call-ended");
+          io.to(sid).emit("call-ended", { from });
         });
       }
     });
@@ -127,7 +127,7 @@ module.exports = (io) => {
     });
 
     //////////////////////////////////////////////////
-    // NEW: SPEECH TEXT RELAY
+    // SPEECH TEXT RELAY
     //////////////////////////////////////////////////
     socket.on("speech-text", ({ to, text, from }) => {
       if (onlineUsers[to]) {

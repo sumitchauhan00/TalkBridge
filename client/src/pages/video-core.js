@@ -33,6 +33,7 @@
   let localStream;
   let peer;
   let remoteStream;
+  let keepAliveInterval = null;
 
   // Offer/answer negotiation state
   let makingOffer = false;
@@ -55,7 +56,7 @@
       localStorage.removeItem("preCallPage");
       window.location = pre;
     } else {
-      window.location = "Chat.html";
+      window.location = "Chat.html"; // if your file is chat.html then change
     }
   }
 
@@ -84,6 +85,7 @@
 
   async function getAndAddLocalStream() {
     try {
+      if (localStream) return; // prevent duplicate gUM
       localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       if (myVideo) {
         myVideo.srcObject = localStream;
@@ -104,7 +106,6 @@
     });
 
     peer.ontrack = (event) => {
-      console.log("ontrack", event.streams);
       const [stream] = event.streams;
       if (stream && userVideo) {
         remoteStream = stream;
@@ -114,7 +115,9 @@
     };
 
     peer.onicecandidate = ({ candidate }) => {
-      if (candidate && realFriend) socket.emit("ice-candidate", { to: realFriend, candidate });
+      if (candidate && realFriend) {
+        socket.emit("ice-candidate", { to: realFriend, from: myId, candidate });
+      }
     };
 
     peer.onconnectionstatechange = () => {
@@ -152,7 +155,6 @@
     realFriend = from;
     loadFriendName();
 
-    // Always get fresh local stream & add before peer/answer
     await getAndAddLocalStream();
     if (!peer) createPeer();
   });
@@ -215,21 +217,50 @@
     await getAndAddLocalStream();
     createPeer();
 
-    window.AppSpeechToSign?.init();
-    window.AppSignToSpeech?.init();
+    window.AppSpeechToSign?.init?.();
+    window.AppSignToSpeech?.init?.();
 
-    if (isCaller && realFriend) socket.emit("call-user", { to: realFriend, from: myId });
+    // caller must send offer immediately
+    if (isCaller && realFriend && peer) {
+      try {
+        makingOffer = true;
+        await peer.setLocalDescription(await peer.createOffer());
+
+        socket.emit("webrtc-description", {
+          to: realFriend,
+          from: myId,
+          description: peer.localDescription,
+        });
+
+        // legacy wake-up event support
+        socket.emit("call-user", {
+          to: realFriend,
+          from: myId,
+          offer: peer.localDescription,
+        });
+      } catch (e) {
+        console.error("initial offer error:", e);
+      } finally {
+        makingOffer = false;
+      }
+    }
   }
 
-  setInterval(() => {
+  keepAliveInterval = setInterval(() => {
     if (remoteStream && userVideo && userVideo.srcObject !== remoteStream) {
       userVideo.srcObject = remoteStream;
       userVideo.play?.().catch(() => {});
     }
-  }, 500);
+  }, 700);
 
   function cleanupAndExit() {
+    if (keepAliveInterval) {
+      clearInterval(keepAliveInterval);
+      keepAliveInterval = null;
+    }
+
     if (localStream) localStream.getTracks().forEach((track) => track.stop());
+
     if (peer) {
       peer.onnegotiationneeded = null;
       peer.onicecandidate = null;
@@ -248,12 +279,15 @@
   }
 
   function hangUp() {
-    if (realFriend) socket.emit("end-call", { to: realFriend });
+    if (realFriend) {
+      socket.emit("end-call", { to: realFriend, from: myId });
+      socket.emit("call-ended", { to: realFriend, from: myId }); // compat
+    }
     cleanupAndExit();
   }
 
   function declineCall() {
-    if (realFriend) socket.emit("call-declined", { to: realFriend });
+    if (realFriend) socket.emit("call-declined", { to: realFriend, from: myId });
     cleanupAndExit();
   }
 
@@ -268,7 +302,7 @@
   }
 
   function toggleVideo() {
-    const activeStream = (myVideo && myVideo.srcObject) ? myVideo.srcObject : localStream;
+    const activeStream = myVideo && myVideo.srcObject ? myVideo.srcObject : localStream;
     if (!activeStream) {
       showAlert("No camera stream");
       return;

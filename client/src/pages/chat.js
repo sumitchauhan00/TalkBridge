@@ -344,7 +344,7 @@ function startCall() {
     }
     localStorage.setItem("callTo", currentContact._id);
     localStorage.setItem("isCaller", "true");
-    window.location = "role_select.html"; // ← changed from video.html
+    window.location = "video.html"; // ← changed from video.html
 }
 
 socket.on("call-made", ({ from }) => {
@@ -369,7 +369,7 @@ function closeAlert() {
 function acceptCall() {
   localStorage.setItem("callTo", incomingCaller);
   localStorage.setItem("isCaller", "false");
-  window.location = "Video.html";
+  window.location = "video.html";
 }
 
 function declineCall() {

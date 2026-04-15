@@ -51,56 +51,28 @@ module.exports = (io) => {
     });
 
     //////////////////////////////////////////////////
-    // CALL SIGNALING (BACKWARD + NEW COMPAT)
+    // INITIAL CALL SIGNALING
     //////////////////////////////////////////////////
-
-    // old client -> server
     socket.on("call-user", ({ to, offer, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          // old receiver event
           io.to(sid).emit("call-made", { offer, from });
-          // new receiver event
-          io.to(sid).emit("offer", { offer, from });
         });
       }
     });
 
-    // new client -> server
-    socket.on("offer", ({ to, offer, from }) => {
+    socket.on("make-answer", ({ to, answer }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("call-made", { offer, from }); // old
-          io.to(sid).emit("offer", { offer, from });     // new
+          io.to(sid).emit("answer-made", { answer });
         });
       }
     });
 
-    // old answer path
-    socket.on("make-answer", ({ to, answer, from }) => {
+    socket.on("ice-candidate", ({ to, candidate }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("answer-made", { answer, from }); // old
-          io.to(sid).emit("answer", { answer, from });      // new
-        });
-      }
-    });
-
-    // new answer path
-    socket.on("answer", ({ to, answer, from }) => {
-      if (onlineUsers[to]) {
-        onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("answer-made", { answer, from }); // old
-          io.to(sid).emit("answer", { answer, from });      // new
-        });
-      }
-    });
-
-    // ice
-    socket.on("ice-candidate", ({ to, candidate, from }) => {
-      if (onlineUsers[to]) {
-        onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("ice-candidate", { candidate, from });
+          io.to(sid).emit("ice-candidate", { candidate });
         });
       }
     });
@@ -135,20 +107,10 @@ module.exports = (io) => {
       }
     });
 
-    // old end
-    socket.on("end-call", ({ to, from }) => {
+    socket.on("end-call", ({ to }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("call-ended", { from });
-        });
-      }
-    });
-
-    // new end
-    socket.on("call-ended", ({ to, from }) => {
-      if (onlineUsers[to]) {
-        onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("call-ended", { from });
+          io.to(sid).emit("call-ended");
         });
       }
     });

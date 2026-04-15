@@ -13,7 +13,7 @@
 
     localStorage.setItem("callTo", friendId);
     localStorage.setItem("isCaller", "true");
-    window.location = "video.html";
+    window.location = "Video.html";
   }
 
   socket.on("call-made", ({ from }) => {
@@ -28,7 +28,7 @@
   function acceptCall() {
     localStorage.setItem("callTo", window.ChatState.incomingCaller);
     localStorage.setItem("isCaller", "false");
-    window.location = "video.html";
+    window.location = "Video.html";
   }
 
   function declineCall() {

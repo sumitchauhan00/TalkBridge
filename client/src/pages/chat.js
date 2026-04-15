@@ -306,7 +306,7 @@ function startCall() {
   localStorage.setItem("callTo", friendId);
   localStorage.setItem("isCaller", "true");
   localStorage.setItem("preCallPage", "Chat.html");
-  window.location = "video.html"; // keep exact existing filename
+  window.location = "Video.html"; // keep exact existing filename
 }
 
 socket.on("call-made", ({ from }) => {
@@ -337,7 +337,7 @@ function acceptCall() {
   localStorage.setItem("callTo", incomingCaller);
   localStorage.setItem("isCaller", "false");
   localStorage.setItem("preCallPage", "Chat.html");
-  window.location = "video.html";
+  window.location = "Video.html";
 }
 
 function declineCall() {

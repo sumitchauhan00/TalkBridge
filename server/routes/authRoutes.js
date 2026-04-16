@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
 
 const {
   signup,
@@ -14,19 +14,20 @@ const {
 
 const User = require("../models/User");
 
-// ensure uploads dir exists
-const uploadsDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || ".jpg");
-    cb(null, `user_${Date.now()}${ext}`);
+// Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "talkbridge_profiles",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [{ width: 512, height: 512, crop: "limit" }],
   },
 });
 
@@ -49,8 +50,28 @@ router.get("/search/:username", searchUser);
 router.post("/photo/:userId", (req, res, next) => {
   upload.single("photo")(req, res, function (err) {
     if (err) {
-      return res.status(400).json({ message: err.message || "Upload failed" });
+      console.log("UPLOAD ERROR RAW:", err);
+
+      // multer known errors
+      if (err.name === "MulterError") {
+        return res.status(400).json({
+          message: `MulterError: ${err.message}`,
+          code: err.code || null,
+        });
+      }
+
+      // cloudinary / storage errors
+      return res.status(400).json({
+        message: err.message || "Upload failed",
+        name: err.name || "UploadError",
+        http_code: err.http_code || null,
+      });
     }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file received in field 'photo'" });
+    }
+
     next();
   });
 }, updatePhoto);

@@ -7,9 +7,6 @@ module.exports = (io) => {
   io.on("connection", (socket) => {
     console.log("New socket:", socket.id);
 
-    //////////////////////////////////////////////////
-    // JOIN
-    //////////////////////////////////////////////////
     socket.on("join", (userId) => {
       socket.userId = userId;
 
@@ -22,9 +19,6 @@ module.exports = (io) => {
       socket.emit("online-users", Object.keys(onlineUsers));
     });
 
-    //////////////////////////////////////////////////
-    // CHAT MESSAGE
-    //////////////////////////////////////////////////
     socket.on("send_message", async ({ senderId, receiverId, message }) => {
       await Message.create({
         sender: senderId,
@@ -39,9 +33,6 @@ module.exports = (io) => {
       }
     });
 
-    //////////////////////////////////////////////////
-    // TYPING
-    //////////////////////////////////////////////////
     socket.on("typing", ({ to, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
@@ -50,9 +41,8 @@ module.exports = (io) => {
       }
     });
 
-    //////////////////////////////////////////////////
-    // INITIAL CALL SIGNALING
-    //////////////////////////////////////////////////
+
+
     socket.on("call-user", ({ to, offer, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
@@ -61,10 +51,19 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("make-answer", ({ to, answer, from }) => {
+    socket.on("callee-ready", ({ to, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("answer-made", { answer, from });
+          io.to(sid).emit("callee-ready", { from });
+        });
+      }
+    });
+
+    // new relay: receiver local camera ready -> notify caller
+    socket.on("receiver-local-ready", ({ to, from }) => {
+      if (onlineUsers[to]) {
+        onlineUsers[to].forEach((sid) => {
+          io.to(sid).emit("receiver-local-ready", { from });
         });
       }
     });
@@ -77,28 +76,14 @@ module.exports = (io) => {
       }
     });
 
-    //////////////////////////////////////////////////
-    // SAFE RENEGOTIATION SIGNALING
-    //////////////////////////////////////////////////
-    socket.on("renegotiate-offer", ({ to, offer, from }) => {
+    socket.on("webrtc-description", ({ to, from, description }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("renegotiate-offer", { offer, from });
+          io.to(sid).emit("webrtc-description", { from, description });
         });
       }
     });
 
-    socket.on("renegotiate-answer", ({ to, answer, from }) => {
-      if (onlineUsers[to]) {
-        onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("renegotiate-answer", { answer, from });
-        });
-      }
-    });
-
-    //////////////////////////////////////////////////
-    // DECLINE / END
-    //////////////////////////////////////////////////
     socket.on("call-declined", ({ to, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
@@ -115,9 +100,14 @@ module.exports = (io) => {
       }
     });
 
-    //////////////////////////////////////////////////
-    // ML TEXT RELAY
-    //////////////////////////////////////////////////
+    socket.on("video-toggled", ({ to, from, enabled }) => {
+  if (onlineUsers[to]) {
+    onlineUsers[to].forEach((sid) => {
+      io.to(sid).emit("remote-video-toggled", { from, enabled });
+    });
+  }
+});
+
     socket.on("ml-text", ({ to, text }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
@@ -126,9 +116,6 @@ module.exports = (io) => {
       }
     });
 
-    //////////////////////////////////////////////////
-    // SPEECH TEXT RELAY
-    //////////////////////////////////////////////////
     socket.on("speech-text", ({ to, text, from }) => {
       if (onlineUsers[to]) {
         onlineUsers[to].forEach((sid) => {
@@ -137,20 +124,6 @@ module.exports = (io) => {
       }
     });
 
-    //////////////////////////////////////////////////
-    // PERFECT NEGOTIATION SDP
-    //////////////////////////////////////////////////
-    socket.on("webrtc-description", ({ to, from, description }) => {
-      if (onlineUsers[to]) {
-        onlineUsers[to].forEach((sid) => {
-          io.to(sid).emit("webrtc-description", { from, description });
-        });
-      }
-    });
-
-    //////////////////////////////////////////////////
-    // DISCONNECT
-    //////////////////////////////////////////////////
     socket.on("disconnect", () => {
       const userId = socket.userId;
       if (!userId || !onlineUsers[userId]) return;

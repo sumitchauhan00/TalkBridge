@@ -79,9 +79,14 @@ exports.searchUser = async (req, res) => {
 };
 
 // UPDATE PROFILE PHOTO
+// UPDATE PROFILE PHOTO
+
 exports.updatePhoto = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    console.log("updatePhoto userId:", userId);
+    console.log("updatePhoto req.file:", req.file);
 
     if (!userId) {
       return res.status(400).json({ message: "userId is required" });
@@ -91,10 +96,14 @@ exports.updatePhoto = async (req, res) => {
       return res.status(400).json({ message: "Photo file required" });
     }
 
-    // ==== DYNAMIC base URL generation here ====
-    // will work for both local and deployed (Render, etc)
-    const hostUrl = req.protocol + "://" + req.get("host");
-    const photoUrl = `${hostUrl}/uploads/${req.file.filename}`;
+    // multer-storage-cloudinary usually gives secure_url in path
+    const photoUrl = req.file.path || req.file.secure_url;
+
+    if (!photoUrl) {
+      return res.status(400).json({
+        message: "Cloudinary URL missing from uploaded file object",
+      });
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -106,12 +115,15 @@ exports.updatePhoto = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({
+    return res.json({
       message: "Photo updated successfully",
       user: updatedUser,
     });
   } catch (error) {
     console.log("updatePhoto error:", error);
-    res.status(500).json({ message: error.message || "Server error" });
+    return res.status(500).json({
+      message: error.message || "Server error",
+      name: error.name || "ServerError",
+    });
   }
 };

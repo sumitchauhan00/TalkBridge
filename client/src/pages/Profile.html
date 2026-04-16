@@ -27,23 +27,25 @@ if (localStorage.getItem('app-theme') === 'dark') {
      <link rel="stylesheet" href="Profile.css">
      <link rel="stylesheet" href="global.css">
      <link rel="stylesheet" href="toggle.css">
-    </head>
+</head>
 
 <body>
 
+<!-- NEW: top bar with theme toggle -->
+<div class="profile-topbar">
+  <!-- <button id="theme-toggle" class="theme-btn" title="Switch Theme">🌙</button> -->
+</div>
 
 <div class="profile-card">
-  <h2>My Profile</h2>
+  <div class="profile-title-row">
+    <h2>My Profile</h2>
+    <button id="theme-toggle" class="theme-btn" title="Switch Theme">🌙</button>
+  </div>
 
   <img id="avatar" src="" />
 
-  <!-- NEW FILE UI -->
   <div class="file-upload">
     <label for="photoInput" class="upload-btn">📷 Choose Photo</label>
-
-    <!-- ✅ THIS LINE REQUIRED -->
-    <!-- <span id="fileName"></span> -->
-
     <input type="file" id="photoInput" accept="image/*" hidden />
   </div>
 
@@ -54,7 +56,6 @@ if (localStorage.getItem('app-theme') === 'dark') {
 
   <button onclick="goChat()">Back to Chat</button>
   <button class="logout-btn" onclick="logout()">Logout</button>
-
 </div>
 
 <script src="Profile.js"></script>

@@ -30,17 +30,20 @@
     userVideo.playsInline = true;
   }
 
-  let localStream;
-  let peer;
-  let remoteStream;
+  let localStream = null;
+  let peer = null;
+  let remoteStream = null;
   let keepAliveInterval = null;
 
-  // Offer/answer negotiation state
   let makingOffer = false;
-  let ignoreOffer = false;
-  let isSettingRemoteAnswerPending = false;
+  let sentInitialOffer = false;
+  let remoteDescSet = false;
+  const pendingCandidates = [];
+
   const isCaller = localStorage.getItem("isCaller") === "true";
-  const polite = !isCaller;
+
+  // sender auto-refresh once when receiver local camera is ready
+  let senderAutoRefreshed = sessionStorage.getItem("senderAutoRefreshed") === "1";
 
   function showAlert(msg) {
     const toast = document.getElementById("toast");
@@ -56,7 +59,7 @@
       localStorage.removeItem("preCallPage");
       window.location = pre;
     } else {
-      window.location = "Chat.html"; // if your file is chat.html then change
+      window.location = "Chat.html";
     }
   }
 
@@ -70,7 +73,6 @@
       friendLabel.innerText = "Unknown";
     }
   }
-  loadFriendName();
 
   function ensureLocalTracksAdded() {
     if (!peer || !localStream) return;
@@ -83,18 +85,33 @@
     });
   }
 
-  async function getAndAddLocalStream() {
-    try {
-      if (localStream) return; // prevent duplicate gUM
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      if (myVideo) {
-        myVideo.srcObject = localStream;
-        myVideo.play?.().catch(() => {});
+  async function getLocalStreamOnce() {
+    if (localStream) return localStream;
+
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+    if (myVideo) {
+      myVideo.srcObject = localStream;
+      myVideo.play?.().catch(() => {});
+      myVideo.style.opacity = "1";
+    }
+
+    // receiver local preview ready -> ask sender to refresh once
+    if (!isCaller && realFriend) {
+      socket.emit("receiver-local-ready", { to: realFriend, from: myId });
+    }
+
+    return localStream;
+  }
+
+  async function flushPendingIce() {
+    while (pendingCandidates.length) {
+      const c = pendingCandidates.shift();
+      try {
+        await peer.addIceCandidate(new RTCIceCandidate(c));
+      } catch (e) {
+        console.error("pending ICE error:", e);
       }
-      ensureLocalTracksAdded();
-    } catch (e) {
-      showAlert("Camera/Mic access denied or not available");
-      console.warn("getUserMedia error:", e);
     }
   }
 
@@ -115,9 +132,8 @@
     };
 
     peer.onicecandidate = ({ candidate }) => {
-      if (candidate && realFriend) {
-        socket.emit("ice-candidate", { to: realFriend, from: myId, candidate });
-      }
+      if (!candidate || !realFriend) return;
+      socket.emit("ice-candidate", { to: realFriend, from: myId, candidate });
     };
 
     peer.onconnectionstatechange = () => {
@@ -131,61 +147,105 @@
       }
     };
 
-    peer.onnegotiationneeded = async () => {
-      try {
-        if (!realFriend) return;
-        makingOffer = true;
-        await peer.setLocalDescription(await peer.createOffer());
-        socket.emit("webrtc-description", {
-          to: realFriend,
-          from: myId,
-          description: peer.localDescription,
-        });
-      } catch (e) {
-        console.log("onnegotiationneeded error:", e);
-      } finally {
-        makingOffer = false;
-      }
-    };
-
     ensureLocalTracksAdded();
   }
 
-  socket.on("call-made", async ({ from }) => {
-    realFriend = from;
-    loadFriendName();
+  async function initPeerWithLocalMedia() {
+    await getLocalStreamOnce();
+    createPeer();
+    ensureLocalTracksAdded();
+  }
 
-    await getAndAddLocalStream();
-    if (!peer) createPeer();
+  async function sendInitialOfferOnce() {
+    if (!isCaller || !realFriend || !peer || sentInitialOffer || makingOffer) return;
+
+    try {
+      makingOffer = true;
+      await peer.setLocalDescription(await peer.createOffer());
+
+      socket.emit("webrtc-description", {
+        to: realFriend,
+        from: myId,
+        description: peer.localDescription,
+      });
+
+      socket.emit("call-user", {
+        to: realFriend,
+        from: myId,
+        offer: peer.localDescription,
+      });
+
+      sentInitialOffer = true;
+    } catch (e) {
+      console.error("initial offer error:", e);
+    } finally {
+      makingOffer = false;
+    }
+  }
+
+  socket.on("call-made", async ({ from }) => {
+    try {
+      realFriend = from;
+      await loadFriendName();
+      await initPeerWithLocalMedia();
+
+      socket.emit("callee-ready", { to: realFriend, from: myId });
+    } catch (e) {
+      console.error("call-made error:", e);
+    }
+  });
+
+  socket.on("callee-ready", async ({ from }) => {
+    if (!isCaller) return;
+    if (from !== realFriend) return;
+    await initPeerWithLocalMedia();
+    await sendInitialOfferOnce();
+  });
+
+  // sender refreshes once when receiver local camera is ready
+  socket.on("receiver-local-ready", ({ from }) => {
+    if (!isCaller) return;
+    if (from !== realFriend) return;
+    if (senderAutoRefreshed) return;
+
+    senderAutoRefreshed = true;
+    sessionStorage.setItem("senderAutoRefreshed", "1");
+    window.location.reload();
   });
 
   socket.on("webrtc-description", async ({ from, description }) => {
     try {
       realFriend = from;
-      if (!peer) {
-        await getAndAddLocalStream();
-        createPeer();
-      }
-
-      const readyForOffer =
-        !makingOffer && (peer.signalingState === "stable" || isSettingRemoteAnswerPending);
-
-      const offerCollision = description.type === "offer" && !readyForOffer;
-      ignoreOffer = !polite && offerCollision;
-      if (ignoreOffer) return;
-
-      isSettingRemoteAnswerPending = description.type === "answer";
-      await peer.setRemoteDescription(description);
-      isSettingRemoteAnswerPending = false;
+      await initPeerWithLocalMedia();
 
       if (description.type === "offer") {
-        ensureLocalTracksAdded();
+        if (peer.signalingState !== "stable") {
+          await Promise.all([
+            peer.setLocalDescription({ type: "rollback" }).catch(() => {}),
+            peer.setRemoteDescription(description),
+          ]);
+        } else {
+          await peer.setRemoteDescription(description);
+        }
+
+        remoteDescSet = true;
+        await flushPendingIce();
+
         await peer.setLocalDescription(await peer.createAnswer());
         socket.emit("webrtc-description", {
           to: realFriend,
           from: myId,
           description: peer.localDescription,
         });
+        return;
+      }
+
+      if (description.type === "answer") {
+        if (peer.signalingState === "have-local-offer") {
+          await peer.setRemoteDescription(description);
+          remoteDescSet = true;
+          await flushPendingIce();
+        }
       }
     } catch (e) {
       console.error("webrtc-description error:", e);
@@ -195,9 +255,15 @@
   socket.on("ice-candidate", async ({ candidate }) => {
     try {
       if (!peer || !candidate) return;
-      await peer.addIceCandidate(candidate);
+
+      if (!remoteDescSet) {
+        pendingCandidates.push(candidate);
+        return;
+      }
+
+      await peer.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (e) {
-      if (!ignoreOffer) console.error("ICE add error:", e);
+      console.error("ICE add error:", e);
     }
   });
 
@@ -211,38 +277,31 @@
     setTimeout(cleanupAndExit, 700);
   });
 
+  // NEW: keep both sides in sync for camera toggle
+ socket.on("remote-video-toggled", ({ enabled }) => {
+  if (!userVideo) return;
+
+  if (enabled) {
+    userVideo.style.opacity = "1";
+    userVideo.style.backgroundColor = "#000";
+  } else {
+    userVideo.style.opacity = "0";          // hide video frame
+    userVideo.style.backgroundColor = "#000"; // show black box
+  }
+
+  showAlert(enabled ? "Friend's Camera On" : "Friend's Camera Off");
+});
+
   async function start() {
     if (!realFriend) realFriend = localStorage.getItem("callTo");
-
-    await getAndAddLocalStream();
-    createPeer();
+    await loadFriendName();
+    await initPeerWithLocalMedia();
 
     window.AppSpeechToSign?.init?.();
     window.AppSignToSpeech?.init?.();
 
-    // caller must send offer immediately
-    if (isCaller && realFriend && peer) {
-      try {
-        makingOffer = true;
-        await peer.setLocalDescription(await peer.createOffer());
-
-        socket.emit("webrtc-description", {
-          to: realFriend,
-          from: myId,
-          description: peer.localDescription,
-        });
-
-        // legacy wake-up event support
-        socket.emit("call-user", {
-          to: realFriend,
-          from: myId,
-          offer: peer.localDescription,
-        });
-      } catch (e) {
-        console.error("initial offer error:", e);
-      } finally {
-        makingOffer = false;
-      }
+    if (isCaller && realFriend) {
+      socket.emit("call-user", { to: realFriend, from: myId });
     }
   }
 
@@ -251,7 +310,7 @@
       userVideo.srcObject = remoteStream;
       userVideo.play?.().catch(() => {});
     }
-  }, 700);
+  }, 800);
 
   function cleanupAndExit() {
     if (keepAliveInterval) {
@@ -259,30 +318,36 @@
       keepAliveInterval = null;
     }
 
-    if (localStream) localStream.getTracks().forEach((track) => track.stop());
+    if (localStream) {
+      localStream.getTracks().forEach((track) => track.stop());
+      localStream = null;
+    }
 
     if (peer) {
-      peer.onnegotiationneeded = null;
       peer.onicecandidate = null;
       peer.ontrack = null;
+      peer.onconnectionstatechange = null;
       peer.close();
       peer = null;
     }
+
+    remoteStream = null;
+    remoteDescSet = false;
+    pendingCandidates.length = 0;
+    sentInitialOffer = false;
 
     window.AppSpeechToSign?.cleanup?.();
     window.AppSignToSpeech?.cleanup?.();
 
     localStorage.removeItem("isCaller");
     localStorage.removeItem("callTo");
+    sessionStorage.removeItem("senderAutoRefreshed");
 
     goBackAfterCall();
   }
 
   function hangUp() {
-    if (realFriend) {
-      socket.emit("end-call", { to: realFriend, from: myId });
-      socket.emit("call-ended", { to: realFriend, from: myId }); // compat
-    }
+    if (realFriend) socket.emit("end-call", { to: realFriend, from: myId });
     cleanupAndExit();
   }
 
@@ -302,36 +367,35 @@
   }
 
   function toggleVideo() {
-    const activeStream = myVideo && myVideo.srcObject ? myVideo.srcObject : localStream;
-    if (!activeStream) {
-      showAlert("No camera stream");
-      return;
-    }
+    const activeStream = myVideo?.srcObject || localStream;
+    if (!activeStream) return showAlert("No camera stream");
 
     const tracks = activeStream.getVideoTracks();
-    if (!tracks.length) {
-      showAlert("No video track");
-      return;
-    }
+    if (!tracks.length) return showAlert("No video track");
 
     const willEnable = !tracks[0].enabled;
     tracks.forEach((t) => (t.enabled = willEnable));
 
-    if (localStream && localStream !== activeStream) {
-      localStream.getVideoTracks().forEach((t) => (t.enabled = willEnable));
-    }
-
     if (myVideo) {
-      myVideo.srcObject = activeStream;
-      myVideo.play?.().catch(() => {});
       myVideo.style.opacity = willEnable ? "1" : "0.15";
+      myVideo.play?.().catch(() => {});
     }
 
-    showAlert(willEnable ? "Camera On" : "Camera Off");
-
+    // local modules sync
     window.dispatchEvent(
       new CustomEvent("app:video-toggled", { detail: { enabled: willEnable } })
     );
+
+    // remote side sync (UI + state awareness)
+    if (realFriend) {
+      socket.emit("video-toggled", {
+        to: realFriend,
+        from: myId,
+        enabled: willEnable,
+      });
+    }
+
+    showAlert(willEnable ? "Camera On" : "Camera Off");
   }
 
   window.hangUp = hangUp;
@@ -354,5 +418,9 @@
     showAlert,
   };
 
-  start();
+  start().catch((e) => {
+    console.error("video start error:", e);
+    alert("Unable to start video call");
+    window.location = "Chat.html";
+  });
 })();

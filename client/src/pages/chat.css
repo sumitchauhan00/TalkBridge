@@ -1,4 +1,4 @@
-/* Note: :root yahan se hata diya hai kyunki wo ab Global.css mein hai. */
+/* Note: :root moved to Global.css */
 
 * {
   box-sizing: border-box;
@@ -7,8 +7,8 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--bg-body); /* Changed from var(--bg) */
-  color: var(--text-main);    /* Changed from var(--text) */
+  background: var(--bg-body);
+  color: var(--text-main);
 }
 
 /* MAIN LAYOUT */
@@ -20,15 +20,15 @@ body {
 /* LEFT PANEL */
 .contacts {
   width: 280px;
-  background: var(--bg-card); /* Changed from var(--panel) */
-  border-right: 1px solid var(--border-color); /* Changed from var(--border) */
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
   padding: 15px;
   overflow-y: auto;
 }
 
 .contacts h3 {
   margin: 10px 0;
-  color: var(--text-muted); /* Changed from var(--muted) */
+  color: var(--text-muted);
 }
 
 /* SEARCH */
@@ -38,10 +38,9 @@ body {
   border-radius: 10px;
   border: 1px solid var(--border-color);
   margin-bottom: 6px;
-  background: var(--bg-input); /* Changed from white */
-  color: var(--text-main);     /* Changed from var(--text) */
+  background: var(--bg-input);
+  color: var(--text-main);
 }
-
 #searchInput:focus {
   border-color: var(--primary);
   outline: none;
@@ -55,18 +54,16 @@ body {
   cursor: pointer;
   transition: 0.2s;
   font-size: 14px;
-  color: var(--text-main); /* Added to ensure text visibility */
+  color: var(--text-main);
 }
-
 .contact:hover,
 .search-user:hover {
-  background: var(--bg-hover); /* Changed from #f1f5f9 */
+  background: var(--bg-hover);
 }
-
-/* SELECTED CONTACT */
-.contact.active {
-  background: var(--bg-hover); /* Changed from #e0ecff to work in Dark Mode */
-  border: 1px solid var(--primary); /* Added border to distinguish active state nicely */
+.contact.active,
+#contacts .contact.active {
+  background: var(--bg-hover);
+  border: 1px solid var(--primary);
 }
 
 /* RIGHT PANEL */
@@ -85,8 +82,12 @@ body {
   font-size: 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-main);
+  justify-content: flex-end;
+}
+#chatWith {
+  margin-right: auto;
 }
 
 /* CHAT WINDOW */
@@ -103,7 +104,7 @@ body {
 .me {
   align-self: flex-end;
   background: var(--primary);
-  color: white; /* Text on primary should stay white */
+  color: white;
   padding: 10px 14px;
   border-radius: 18px 18px 4px 18px;
   max-width: 65%;
@@ -113,7 +114,7 @@ body {
 /* OTHER MESSAGE */
 .other {
   align-self: flex-start;
-  background: var(--bg-card); /* Changed from #f3f4f6 (Greyish) to Card BG for better dark mode */
+  background: var(--bg-card);
   color: var(--text-main);
   padding: 10px 14px;
   border-radius: 18px 18px 18px 4px;
@@ -129,7 +130,6 @@ body {
   background: var(--bg-card);
   border-top: 1px solid var(--border-color);
 }
-
 .send-area input {
   flex: 1;
   padding: 12px;
@@ -137,14 +137,12 @@ body {
   border: 1px solid var(--border-color);
   outline: none;
   font-size: 14px;
-  background: var(--bg-input); /* Changed from white */
-  color: var(--text-main);     /* Changed from var(--text) */
+  background: var(--bg-input);
+  color: var(--text-main);
 }
-
 .send-area input:focus {
   border-color: var(--primary);
 }
-
 .send-area button {
   margin-left: 10px;
   padding: 10px 18px;
@@ -156,7 +154,6 @@ body {
   font-weight: bold;
   transition: 0.2s;
 }
-
 .send-area button:hover {
   background: var(--primary-hover);
 }
@@ -168,15 +165,14 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Overlay stays dark */
+  background: rgba(0, 0, 0, 0.5);
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
-
 .modal-box {
-  background: var(--bg-card); /* Changed from var(--panel) */
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   padding: 20px;
   border-radius: 12px;
@@ -184,7 +180,6 @@ body {
   width: 260px;
   color: var(--text-main);
 }
-
 .modal-box button {
   margin-top: 10px;
   padding: 8px 14px;
@@ -194,13 +189,11 @@ body {
   border-radius: 8px;
   cursor: pointer;
 }
-
 .call-actions {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
 }
-
 .decline {
   background: var(--danger);
 }
@@ -215,13 +208,13 @@ body {
   text-align: center;
   font-size: 42px;
   font-weight: 600;
-  color: var(--text-muted); /* Changed from var(--muted) */
+  color: var(--text-muted);
 }
 
 /* TYPING TEXT */
 .typing {
   font-size: 14px;
-  color: var(--text-muted); /* Changed from var(--muted) */
+  color: var(--text-muted);
 }
 
 /* ONLINE DOT */
@@ -231,7 +224,6 @@ body {
   border-radius: 50%;
   background: gray;
 }
-
 .dot.online {
   background: var(--success);
 }
@@ -247,7 +239,6 @@ body {
   border-radius: 10px;
   color: var(--text-main);
 }
-
 .me-box img {
   width: 42px;
   height: 42px;
@@ -255,9 +246,8 @@ body {
   object-fit: cover;
   border: 1px solid var(--border-color);
 }
-
 .me-box:hover {
-  background: var(--bg-hover); /* Changed from #f1f5f9 */
+  background: var(--bg-hover);
 }
 
 /* CONTACT */
@@ -266,14 +256,12 @@ body {
   align-items: center;
   gap: 10px;
 }
-
 .contact-dp {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
-
 .contact-name {
   flex: 1;
 }
@@ -291,14 +279,13 @@ body {
 /* TYPING DOT BUBBLE */
 .typing-msg {
   align-self: flex-start;
-  background: var(--bg-hover); /* Changed from #f3f4f6 */
+  background: var(--bg-hover);
   border: 1px solid var(--border-color);
   padding: 10px 14px;
   border-radius: 18px;
   display: flex;
   gap: 5px;
 }
-
 .typing-msg span {
   width: 6px;
   height: 6px;
@@ -306,7 +293,6 @@ body {
   border-radius: 50%;
   animation: bounce 1.2s infinite;
 }
-
 .typing-msg span:nth-child(2) { animation-delay: .2s; }
 .typing-msg span:nth-child(3) { animation-delay: .4s; }
 
@@ -322,30 +308,36 @@ body {
   justify-content: space-between;
   padding: 8px;
   margin: 5px 0;
-  background: var(--bg-hover); /* Changed from #f8fafc */
+  background: var(--bg-hover);
   border-radius: 6px;
   color: var(--text-main);
 }
-
 .search-user img {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   margin-right: 8px;
 }
-
 .search-user button {
   padding: 5px 10px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.search-user button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-/* ============================= */
 /* FRIEND REQUEST SECTION */
-/* ============================= */
-
 #notifications {
   margin-bottom: 15px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
-
 .request-item {
   display: flex;
   align-items: center;
@@ -353,23 +345,20 @@ body {
   padding: 8px;
   margin: 6px 0;
   border-radius: 8px;
-  background: #2f3e5e;   /* light theme */
+  background: #2f3e5e;
   border: 1px solid #e5e7eb;
 }
-
 .request-item img {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
-
 .request-item span {
   flex: 1;
   font-size: 14px;
   font-weight: 500;
 }
-
 .request-item button {
   padding: 4px 8px;
   font-size: 12px;
@@ -377,108 +366,46 @@ body {
   border: none;
   cursor: pointer;
 }
-
-/* Accept button */
 .request-item button:first-of-type {
   background: #22c55e;
   color: white;
 }
-
-/* Reject button */
 .request-item button:last-of-type {
   background: #ef4444;
-  color: rgb(255, 255, 255);
+  color: #fff;
 }
-
-/* Hover effect */
 .request-item button:hover {
   opacity: 0.9;
 }
-/* ============================= */
-/* FRIEND REQUEST SCROLL (3 items max) */
-/* ============================= */
 
-#notifications {
-  max-height: 180px;   /* 3 request approx */
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-/* Scrollbar style */
+/* Notifications scrollbar */
 #notifications::-webkit-scrollbar {
   width: 6px;
 }
-
 #notifications::-webkit-scrollbar-thumb {
   background: #c0c0c0;
   border-radius: 10px;
 }
-
 #notifications::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-.video-call-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  background: #2563eb;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.2s ease;
-  padding: 0;
-}
-
-.video-call-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
-.video-call-btn svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
-}
-.hidden { display: none !important; }
-
-/* --- chat.js compatibility patch --- */
+/* chat.js compatibility patch */
 #searchResult {
   max-height: 180px;
   overflow-y: auto;
   margin-bottom: 6px;
 }
-
-.search-user button {
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.search-user button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
 #contacts .contact {
   margin: 6px 0;
   padding: 10px;
   border: 1px solid transparent;
   border-radius: 10px;
 }
-
-#contacts .contact.active {
-  border-color: var(--primary);
-}
-
 #sendArea {
-  display: none; /* default hidden; JS contact click pe show karega */
+  display: none; /* hidden by default; JS shows on contact select */
 }
+
 /* Typing dots (Instagram style) */
 #typing .typing-dots {
   display: inline-flex;
@@ -486,7 +413,6 @@ body {
   gap: 5px;
   vertical-align: middle;
 }
-
 #typing .typing-dots span {
   width: 7px;
   height: 7px;
@@ -495,7 +421,6 @@ body {
   opacity: 0.35;
   animation: typingDot 1s infinite ease-in-out;
 }
-
 #typing .typing-dots span:nth-child(2) { animation-delay: .15s; }
 #typing .typing-dots span:nth-child(3) { animation-delay: .30s; }
 
@@ -504,66 +429,136 @@ body {
   40% { opacity: 1; transform: translateY(-3px); }
 }
 
-/* keep your existing css + add/ensure these important parts */
-
-.header {
-  background: var(--bg-card);
-  padding: 18px;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: 600;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-main);
-  justify-content: flex-end;
-}
-
-#chatWith {
-  margin-right: auto;
-}
-
-.video-call-btn {
+/* Unique AI Video Call Button */
+/* .video-call-btn {
+  position: relative;
   width: 44px;
   height: 44px;
-  border-radius: 12px;
   border: none;
-  cursor: pointer;
-  background: #2563eb;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
   color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.2s ease;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
   padding: 0;
-}
-
-.video-call-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
+  margin-right: 8px;
+  transition: transform .2s ease, box-shadow .25s ease, filter .25s ease;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, .35);
+  overflow: hidden;
+} */
 .video-call-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 21px;
+  height: 21px;
   fill: currentColor;
+  z-index: 2;
+}
+.video-call-btn::before,
+.video-call-btn::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 18px;
+  /* border: 2px solid rgba(255,255,255,.28); */
+  /* animation: callPulse 2s infinite; */
+}
+.video-call-btn::after {
+  animation-delay: 1s;
+}
+@keyframes callPulse {
+  0% { transform: scale(.75); opacity: .8; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+.video-call-btn:hover {
+  transform: translateY(-1px) scale(1.04);
+  filter: brightness(1.08);
+}
+.video-call-btn:active {
+  transform: scale(.97);
+}
+.video-call-btn .ml-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid #0b1220;
+  z-index: 3;
 }
 
+/* utility */
 .hidden {
   display: none !important;
 }
 
 .video-call-btn{
-  width:44px;height:44px;border:none;border-radius:12px;
-  background:#2563eb;color:#fff;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;
+  height: 44px;
+  padding: 0 14px 0 12px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg,#2563eb,#7c3aed);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(37,99,235,.35);
 }
-.video-call-btn svg{ width:22px;height:22px;fill:currentColor; }
+.video-call-btn svg{ width:20px;height:20px;fill:currentColor; }
+.vc-text{ font-size:13px; font-weight:600; white-space:nowrap; }
+.video-call-btn .ml-badge{
+  width:10px;height:10px;border-radius:50%;
+  background:#22c55e; border:2px solid #0b1220;
+}
 
-.video-call-btn{
-  width:44px;height:44px;border:none;border-radius:12px;
-  background:#2563eb;color:#fff;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;
-  margin-right:8px;
+/* tooltip */
+.video-call-btn .vc-tooltip{
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  pointer-events: none;
+
+  transition:
+    opacity .2s ease,
+    transform .2s ease,
+    visibility 0s linear 1.5s; /* hide delay */
 }
-.video-call-btn svg{ width:22px;height:22px;fill:currentColor; }
+
+/* show only after 1s hover */
+.video-call-btn:hover .vc-tooltip{
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 1s; /* show delay */
+}
+
+/* optional arrow */
+.video-call-btn .vc-tooltip::before{
+  content:"";
+  position:absolute;
+  top:-6px;
+  right:14px;
+  width:10px;
+  height:10px;
+  background:#0f172a;
+  border-left:1px solid #334155;
+  border-top:1px solid #334155;
+  transform: rotate(45deg);
+}

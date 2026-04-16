@@ -97,3 +97,4 @@ function logout() {
 window.savePhoto = savePhoto;
 window.goChat = goChat;
 window.logout = logout;
+

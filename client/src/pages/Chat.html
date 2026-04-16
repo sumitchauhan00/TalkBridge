@@ -66,19 +66,18 @@
         <span id="typing" class="typing"></span>
 
         <!-- Video Call Button (left of theme toggle) -->
-       <button
-  id="videoCallBtn"
-  class="video-call-btn hidden"
-  onclick="startCall()"
-  title="Start Video Call"
-  aria-label="Start Video Call"
->
+ <button id="videoCallBtn" class="video-call-btn" onclick="startCall()" aria-label="Smart Call: Sign to Speech and Speech to Sign">
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M15 10.5V6a2 2 0 0 0-2-2H5A2 2 0 0 0 3 6v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4.5l6 4V6.5l-6 4z"/>
   </svg>
+  <span class="vc-text">Smart Call: Sign ↔ Speech</span>
+  <span class="vc-tooltip">
+    Smart Camera powered by a Machine Learning model for real-time Sign ↔ Speech translation.
+  </span>
+  <span class="ml-badge"></span>
 </button>
 
-        <button id="theme-toggle" class="theme-btn" title="Switch Theme">🌙</button>
+        <!-- <button id="theme-toggle" class="theme-btn" title="Switch Theme">🌙</button> -->
       </div>
 
       <div id="chat"></div>

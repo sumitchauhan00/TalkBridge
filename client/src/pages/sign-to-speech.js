@@ -1,6 +1,7 @@
 (() => {
   let mlInterval = null;
   let isDetecting = false;
+  let mlInFlight = false; // NEW: prevent overlapping requests
 
   // ML + TTS state
   let predWindow = [];
@@ -97,6 +98,17 @@
     return bestCount >= 2 ? best : null;
   }
 
+  // NEW: timeout-safe fetch
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   function startMLLoop() {
     const app = window.VideoApp;
     const myVideo = app?.myVideo;
@@ -107,27 +119,64 @@
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
+    // NEW: camera off handling
+    const attachTrackEndedHandler = () => {
+      const track = myVideo?.srcObject?.getVideoTracks?.()[0];
+      if (track && !track.__mlEndedBound) {
+        track.addEventListener("ended", () => {
+          if (isDetecting) stopDetecting();
+          if (aiTextEl) {
+            aiTextEl.innerText = "Waiting for video...";
+            aiTextEl.classList.remove("live", "sentence");
+          }
+        });
+        track.__mlEndedBound = true;
+      }
+    };
+
     mlInterval = setInterval(() => {
       if (!isDetecting) return;
-      if (!myVideo.srcObject || myVideo.readyState < 2) return;
+      if (mlInFlight) return; // NEW
+
+      // camera not available => soft idle text, no error
+      if (!myVideo.srcObject || myVideo.readyState < 2) {
+        if (aiTextEl) {
+          aiTextEl.innerText = "Waiting for video...";
+          aiTextEl.classList.remove("live", "sentence");
+        }
+        return;
+      }
+
+      attachTrackEndedHandler();
 
       canvas.width = 320;
       canvas.height = 240;
       ctx.drawImage(myVideo, 0, 0, canvas.width, canvas.height);
 
+      mlInFlight = true;
+
       canvas.toBlob(
         async (blob) => {
-          if (!blob || !isDetecting) return;
-
-          const fd = new FormData();
-          fd.append("frame", blob, "frame.jpg");
-
           try {
-            // ====== ONLY THIS LINE CHANGED ======
-            const res = await fetch(`${baseURL}/api/ml/predict`, {
+            if (!blob || !isDetecting) return;
+
+            const fd = new FormData();
+            fd.append("frame", blob, "frame.jpg");
+
+            const res = await fetchWithTimeout(`${baseURL}/api/ml/predict`, {
               method: "POST",
               body: fd,
             });
+
+            if (!res.ok) {
+              // Don't show scary error on UI; keep it quiet
+              console.log("ML non-2xx:", res.status);
+              if (aiTextEl && isDetecting) {
+                aiTextEl.innerText = "Waiting for signs...";
+                aiTextEl.classList.remove("live", "sentence");
+              }
+              return;
+            }
 
             const data = await res.json();
             const nowTs = Date.now();
@@ -180,7 +229,17 @@
               }
             }
           } catch (e) {
-            console.log("ML fetch error:", e);
+            if (e.name === "AbortError") {
+              console.log("ML fetch timeout");
+            } else {
+              console.log("ML fetch error:", e);
+            }
+            if (aiTextEl && isDetecting) {
+              aiTextEl.innerText = "Waiting for video...";
+              aiTextEl.classList.remove("live", "sentence");
+            }
+          } finally {
+            mlInFlight = false;
           }
         },
         "image/jpeg",
@@ -195,6 +254,7 @@
     sentenceHoldUntil = 0;
     predWindow = [];
     stableText = "Waiting for data...";
+    mlInFlight = false; // NEW
   }
 
   function startDetecting() {
@@ -238,8 +298,8 @@
   window.AppSignToSpeech = {
     init() {
       bindDetectButton();
-      setDetectUI(false);   // initial idle state
-      startMLLoop();        // loop runs, but detect only when isDetecting = true
+      setDetectUI(false);
+      startMLLoop();
 
       const app = window.VideoApp;
       if (app?.socket && !app.__mlTextBound) {

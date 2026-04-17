@@ -15,7 +15,7 @@ exports.predictFromFrame = async (req, res) => {
 
     const mlRes = await axios.post("http://127.0.0.1:8000/predict", form, {
       headers: form.getHeaders(),
-      timeout: 20000,
+      timeout: 10000,
       validateStatus: () => true, // handle non-2xx manually
       responseType: "text",       // read raw safely first
     });

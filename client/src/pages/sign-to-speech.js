@@ -1,7 +1,6 @@
 (() => {
   let mlInterval = null;
   let isDetecting = false;
-  let mlInFlight = false; // NEW: prevent overlapping requests
 
   // ML + TTS state
   let predWindow = [];
@@ -22,6 +21,7 @@
   const detectStatus = document.getElementById("detectStatus");
   const aiTextEl = document.getElementById("aiText");
 
+  // ==== DYNAMIC BASE URL ====
   const baseURL = window.location.origin;
 
   function setDetectUI(active) {
@@ -108,32 +108,26 @@
     const ctx = canvas.getContext("2d");
 
     mlInterval = setInterval(() => {
-      if (!isDetecting || mlInFlight) return;
+      if (!isDetecting) return;
       if (!myVideo.srcObject || myVideo.readyState < 2) return;
 
       canvas.width = 320;
       canvas.height = 240;
       ctx.drawImage(myVideo, 0, 0, canvas.width, canvas.height);
 
-      mlInFlight = true;
-
       canvas.toBlob(
         async (blob) => {
+          if (!blob || !isDetecting) return;
+
+          const fd = new FormData();
+          fd.append("frame", blob, "frame.jpg");
+
           try {
-            if (!blob || !isDetecting) return;
-
-            const fd = new FormData();
-            fd.append("frame", blob, "frame.jpg");
-
+            // ====== ONLY THIS LINE CHANGED ======
             const res = await fetch(`${baseURL}/api/ml/predict`, {
               method: "POST",
               body: fd,
             });
-
-            if (!res.ok) {
-              console.log("ML non-2xx:", res.status);
-              return;
-            }
 
             const data = await res.json();
             const nowTs = Date.now();
@@ -187,8 +181,6 @@
             }
           } catch (e) {
             console.log("ML fetch error:", e);
-          } finally {
-            mlInFlight = false;
           }
         },
         "image/jpeg",
@@ -229,7 +221,6 @@
 
     stopDetecting();
     window.speechSynthesis.cancel();
-    mlInFlight = false;
 
     const v = document.getElementById("voiceIndicator");
     if (v) {
@@ -247,8 +238,8 @@
   window.AppSignToSpeech = {
     init() {
       bindDetectButton();
-      setDetectUI(false);
-      startMLLoop();
+      setDetectUI(false);   // initial idle state
+      startMLLoop();        // loop runs, but detect only when isDetecting = true
 
       const app = window.VideoApp;
       if (app?.socket && !app.__mlTextBound) {

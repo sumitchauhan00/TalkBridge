@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About & Contact | TalkBridge</title>
+  <link rel="stylesheet" href="global.css" />
+  <link rel="stylesheet" href="info.css" />
+  <link rel="stylesheet" href="toggle.css">nk
+</head>
+<body>
+  <main class="info-page">
+    <section class="info-card">
+      <h1>About TalkBridge</h1>
+      <p>
+        TalkBridge is an AI-powered communication platform built to bridge the gap
+        between sign language users and spoken language users.
+      </p>
+      <p>
+        Our Smart Camera uses a Machine Learning model for real-time
+        <strong>Sign ↔ Speech</strong> translation during video calls, making
+        conversations more natural, inclusive, and accessible.
+      </p>
+      <p>
+        We are focused on creating technology that enables equal communication
+        opportunities for everyone, regardless of hearing or speech limitations.
+      </p>
+    </section>
+
+    <section class="info-card">
+      <h2>Key Features</h2>
+      <ul>
+        <li>Real-time Sign to Speech conversion</li>
+        <li>Real-time Speech to Sign support</li>
+        <li>AI-enhanced video calling experience</li>
+        <li>Simple, modern, and accessible interface</li>
+      </ul>
+    </section>
+
+    <section class="info-card">
+      <h2>Contact Us</h2>
+      <p>
+        We’d love to hear from you. For support, feedback, bug reports, feature
+        requests, or collaboration:
+      </p>
+      <p><strong>Email:</strong> support@talkbridge.ai</p>
+      <p class="muted">Typical response time: 24–48 hours</p>
+
+      <form class="contact-form" onsubmit="event.preventDefault(); alert('Message sent successfully!'); this.reset();">
+        <div class="grid">
+          <input type="text" placeholder="Full Name" required />
+          <input type="email" placeholder="Email Address" required />
+        </div>
+        <select required>
+          <option value="">Select Subject</option>
+          <option>Support</option>
+          <option>Bug Report</option>
+          <option>Feature Request</option>
+          <option>Collaboration</option>
+          <option>Other</option>
+        </select>
+        <textarea rows="5" placeholder="Write your message..." required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+  </main>
+  <script src="toggle.js"></script>
+</body>
+</html>

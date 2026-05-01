@@ -191,6 +191,7 @@
   });
 
   window.goProfile = () => (window.location = "Profile.html");
+  window.goAbout = () => (window.location = "info.html");
   window.logout = () => {
     localStorage.removeItem("user");
     window.location = "Login.html";

@@ -41,7 +41,7 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/requests", requestRoutes);
 
-// HTTP + SOCKET
+// HTTP + SOCKETb
 const http = require("http");
 const { Server } = require("socket.io");
 const server = http.createServer(app);

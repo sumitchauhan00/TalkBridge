@@ -562,3 +562,43 @@ body {
   border-top:1px solid #334155;
   transform: rotate(45deg);
 }
+
+
+.contacts{
+  width: 280px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  padding: 15px;
+  padding-bottom: 76px;   /* button ke liye space reserve */
+  overflow-y: auto;
+  position: relative;     /* absolute button anchor */
+}
+
+.about-wrap{
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+  z-index: 5;
+  background: var(--bg-card); /* overlap clean */
+  padding-top: 6px;
+}
+
+.about-btn{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  display: block;
+  text-align: center;
+}
+.about-btn:hover{
+  border-color: var(--primary);
+  color: var(--primary);
+}
